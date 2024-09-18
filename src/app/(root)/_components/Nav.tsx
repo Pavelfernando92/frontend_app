@@ -102,18 +102,6 @@ const Nav = () => {
               <SheetContent side="right" className="w-[250px] sm:w-[300px]">
                 <nav className="flex flex-col space-y-4">
                   <Link
-                    href="/"
-                    className="block py-2 px-4 text-sm hover:bg-gray-100 rounded-md"
-                  >
-                    Inicio
-                  </Link>
-                  <Link
-                    href="/juegos"
-                    className="block py-2 px-4 text-sm hover:bg-gray-100 rounded-md"
-                  >
-                    Juegos
-                  </Link>
-                  <Link
                     href="/perfil"
                     className="block py-2 px-4 text-sm hover:bg-gray-100 rounded-md"
                   >

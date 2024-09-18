@@ -18,7 +18,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: Props) => {
         } md:block`}
       >
         <div className="flex items-center justify-between mb-6">
-          <span className="text-2xl font-semibold">Admin Panel</span>
+          <p className="text-2xl font-semibold">
+            <span className="text-[#800020]">Lotuss</span> Panel
+          </p>
+
           <Button
             variant="ghost"
             size="icon"
