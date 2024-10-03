@@ -11,6 +11,7 @@ declare module "next-auth" {
       apellido_paterno: string;
       apellido_paterno: string;
       telefono: string;
+      profilePicture: string;
     };
   }
 }
