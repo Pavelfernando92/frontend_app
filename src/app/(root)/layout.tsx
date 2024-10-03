@@ -1,21 +1,18 @@
-import { getServerSession } from "next-auth";
 import Nav from "./_components/Nav";
-import { authOptions } from "../api/auth/[...nextauth]/route";
-import { redirect } from "next/navigation";
+import Footer from "./_components/footer";
 
 type Props = {
   children: React.ReactNode;
 };
 const LayoutRoot = async ({ children }: Props) => {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    redirect("/login");
-  }
   return (
-    <main className="min-h-screen bg-gray-100">
-      <Nav />
-      {children}
-    </main>
+    <>
+      <main className="min-h-screen bg-gradient-to-b from-[#800020] to-[#FF0000] text-white">
+        <Nav />
+        {children}
+        <Footer />
+      </main>
+    </>
   );
 };
 

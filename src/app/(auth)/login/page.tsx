@@ -20,7 +20,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
-import Logo from "../../../../public/images/LotusLogo.png";
+import Logo from "../../../../public/images/LotusLogoRed.png";
 
 export default function LoginPage() {
   const router = useRouter();

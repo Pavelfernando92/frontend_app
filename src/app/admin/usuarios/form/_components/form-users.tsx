@@ -16,20 +16,25 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css"; // Importa los estilos por defecto de react-phone-input-2
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
 
 const phoneRegex = new RegExp(
-  /^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/
+  /^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/ // Asegúrate de que el regex sea compatible
 );
 
 export const formSchema = z.object({
   email: z.string().email({
     message: "Por favor ingrese un email válido.",
   }),
-  password: z.string().min(6, {
-    message: "La contraseña debe tener al menos 6 caracteres.",
-  }),
+  password: z
+    .string()
+    .min(6, {
+      message: "La contraseña debe tener al menos 6 caracteres.",
+    })
+    .optional(),
   nombre: z.string().min(2, {
     message: "El nombre debe tener al menos 2 caracteres.",
   }),
@@ -200,7 +205,12 @@ const FormUsers: React.FC<FormUsersProps> = ({ defaultValues, onSubmit }) => {
             <FormItem>
               <FormLabel>Número de Teléfono</FormLabel>
               <FormControl>
-                <Input placeholder="1234567890" {...field} />
+                <PhoneInput
+                  country={"mx"}
+                  value={field.value}
+                  onChange={(value) => field.onChange(`+${value}`)}
+                  inputClass="w-full p-2 border rounded-md"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

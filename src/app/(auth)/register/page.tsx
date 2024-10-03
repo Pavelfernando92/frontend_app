@@ -1,8 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +23,10 @@ import useRegistro from "./hooks/useRegistro";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import Image from "next/image";
-import Logo from "../../../../public/images/LotusLogo.png";
+import Logo from "../../../../public/images/LotusLogoRed.png";
+
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
 export default function RegisterPage() {
   const {
@@ -45,6 +47,13 @@ export default function RegisterPage() {
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
+    }));
+  };
+
+  const handlePhoneChange = (phone: string) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      telefono: `+${phone}`,
     }));
   };
 
@@ -193,14 +202,18 @@ export default function RegisterPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="telefono">Número de Teléfono</Label>
-              <Input
-                id="telefono"
-                name="telefono"
-                type="tel"
-                placeholder="3123123122"
-                required
-                onChange={handleChange}
-                className="focus:ring-[#FF0000]"
+              <PhoneInput
+                country={"mx"}
+                value={formData.telefono}
+                onChange={handlePhoneChange}
+                inputProps={{
+                  name: "telefono",
+                  required: true,
+                  autoFocus: false,
+                }}
+                placeholder="+523123122500"
+                containerStyle={{ width: "100%" }}
+                inputStyle={{ width: "100%" }}
               />
             </div>
           </div>

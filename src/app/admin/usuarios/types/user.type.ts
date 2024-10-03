@@ -7,5 +7,8 @@ type User = {
   telefono: string;
   birthday: string;
   role: string;
+  creditos: number;
   status: string;
+  profilePicture: string;
+  createdAt: string;
 };

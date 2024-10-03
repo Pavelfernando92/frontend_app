@@ -26,6 +26,7 @@ const TotalUsers = () => {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     if (status === "authenticated") {
       getData();
