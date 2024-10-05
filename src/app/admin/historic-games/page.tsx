@@ -64,7 +64,7 @@ export default function GameHistory() {
   }
 
   return (
-    <Card className="w-full max-w-4xl mx-auto mt-10">
+    <Card className="w-full max-w-4xl mx-auto mt-10 pb-12">
       <CardHeader>
         <CardTitle>Histórico de Juegos</CardTitle>
       </CardHeader>

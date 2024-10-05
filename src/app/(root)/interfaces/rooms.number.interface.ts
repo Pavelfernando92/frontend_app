@@ -3,4 +3,5 @@ export interface RoomsNumbers {
   valor: number;
   roomId: number;
   userId: number;
+  user: User;
 }

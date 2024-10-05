@@ -31,7 +31,7 @@ const RootPage = () => {
         signOut();
       }
     }
-  }, [session, status]);
+  }, [session, status, user]);
 
   useEffect(() => {
     const temporizador = setTimeout(() => {
@@ -78,10 +78,10 @@ const RootPage = () => {
   };
 
   useEffect(() => {
-    if (session && status === "authenticated") {
+    if (session && status === "authenticated" && !user) {
       setUser(session.user.id, session.user.token);
     }
-  }, [session, status]);
+  }, [session, status, user]);
 
   // Mostrar el modal solo si el usuario no tiene imagen de perfil
   if (session && user && !user.profilePicture) {

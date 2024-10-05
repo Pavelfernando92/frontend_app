@@ -1,24 +1,16 @@
-"use client";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import lotussApi from "@/lib/axios";
 import useUsersStore from "@/store/users.store";
-import { RoomsInterface } from "../interfaces/rooms.interface";
-import { NoRoomsAvailable } from "./_components/NoRoomsAvailable";
-import CreditWarningModal from "./_components/CreditWarningModal";
-import RoomCard from "./_components/RoomCard";
-import { ColorLegend } from "./_components/ColorLegend";
-import NumberGrid from "./_components/NumberGrid";
-import { ErrorModal } from "./_components/ErrorModal";
-import WinnerModal from "./_components/WinnerModal";
-import { WinnerInterface } from "../interfaces/winner.interface";
-import DrawStartingModal from "./_components/DrawStartingModal";
+
+import { redirect } from "next/navigation";
+import { RoomsInterface } from "../../interfaces/rooms.interface";
+import { WinnerInterface } from "../../interfaces/winner.interface";
 
 let socket: Socket;
 
-export default function GamePage() {
+export const useGameLogic = () => {
   const { data: session, status } = useSession();
   const { user, setUser } = useUsersStore();
   const [room, setRoom] = useState<RoomsInterface | null>(null);
@@ -35,33 +27,20 @@ export default function GamePage() {
     winner: null,
   });
   const [isDrawStartingModalOpen, setIsDrawStartingModalOpen] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
 
   useEffect(() => {
     if (session && status === "authenticated") {
       fetchRoomData(session.user.token);
 
+      // Initialize socket connection
       socket = io(process.env.NEXT_PUBLIC_BACKEND_SOCKET!);
 
-      // Unirse a la sala al recibir el ID de la sala
+      // Join room and listen for events
+      socket.emit("joinRoom", room?.id);
+
       socket.on("roomData", (roomData: RoomsInterface) => {
         setRoom(roomData);
-
-        if (roomData.status === "COMPLETA" && roomData.drawStartTime) {
-          // Verificamos que drawStartTime no sea undefined
-          const currentTime = new Date();
-          const drawStartTime = new Date(roomData.drawStartTime);
-          const timeRemaining = drawStartTime.getTime() - currentTime.getTime();
-
-          if (timeRemaining > 0) {
-            setTimeRemaining(Math.floor(timeRemaining / 1000)); // Convertir a segundos
-            setIsDrawStartingModalOpen(true);
-          }
-        }
       });
-
-      // Emitir evento de unirse a la sala
-      socket.emit("joinRoom", room?.id);
 
       socket.on("numberAssigned", (updatedNumber) => {
         setRoom((prevRoom) => {
@@ -74,6 +53,7 @@ export default function GamePage() {
           };
         });
         setUser(user!.id, session.user.token);
+
         if (user!.creditos < 100) {
           setShowCreditModal(true);
         }
@@ -81,12 +61,13 @@ export default function GamePage() {
 
       socket.on("roomComplete", () => {
         window.scrollTo({ top: 0, behavior: "smooth" });
-        setIsDrawStartingModalOpen(true);
-      });
 
-      socket.on("timeRemaining", (remainingTime: number) => {
-        setTimeRemaining(Math.floor(remainingTime / 1000));
-        setIsDrawStartingModalOpen(true); // Abrir el modal cuando se recibe el tiempo restante
+        setIsDrawStartingModalOpen(true);
+
+        // Opcional: Puedes cerrar el modal después de 30 segundos
+        setTimeout(() => {
+          setIsDrawStartingModalOpen(false);
+        }, 30000);
       });
 
       socket.on("winnerSelected", (winnerData) => {
@@ -103,7 +84,7 @@ export default function GamePage() {
       });
 
       socket.on("newRoomAvailable", () => {
-        fetchRoomData(session.user.token);
+        fetchRoomData(session.user.token); // Fetch new room when available
       });
 
       socket.on("error", (msg) => {
@@ -123,7 +104,6 @@ export default function GamePage() {
       });
       setRoom(data[0]);
     } catch (error) {
-      console.error("Error fetching room:", error);
       setErrorModalState({
         isOpen: true,
         message: "Error fetching room data. Please try again later.",
@@ -131,7 +111,7 @@ export default function GamePage() {
     }
   };
 
-  const assignNumber = async (numberId: number, roomId: number) => {
+  const assignNumber = (numberId: number, roomId: number) => {
     if (!session || !user || user.creditos < 100) {
       return setShowCreditModal(true);
     }
@@ -157,43 +137,34 @@ export default function GamePage() {
   }, [user]);
 
   useEffect(() => {
-    if (user && user.creditos < 100) {
-      setShowCreditModal(true);
+    if (room && room.status === "COMPLETA" && room.drawStartTime) {
+      const currentTime = new Date().getTime(); // Obtiene el tiempo actual en milisegundos
+      const startTime = new Date(room.drawStartTime).getTime(); // Convierte a milisegundos
+
+      const timeElapsed = Math.floor((currentTime - startTime) / 1000); // Tiempo transcurrido en segundos
+
+      // 30 segundos menos el tiempo que ya ha pasado
+      const timeLeft = 30 - timeElapsed;
+
+      if (timeLeft > 0) {
+        setIsDrawStartingModalOpen(true);
+        setTimeout(() => {
+          setIsDrawStartingModalOpen(false);
+        }, timeLeft * 1000); // Ajusta el tiempo restante
+      }
     }
-  }, []);
+  }, [room]);
 
-  if (!room) {
-    return <NoRoomsAvailable />;
-  }
-
-  const availableNumbers = room?.numbers.filter((n) => !n.userId).length;
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-[#800020] to-[#FF0000] text-white">
-      <div className="container mx-auto px-4 py-8">
-        <CreditWarningModal
-          showModal={showCreditModal}
-          setShowModal={setShowCreditModal}
-        />
-        <ErrorModal
-          isOpen={errorModalState.isOpen}
-          message={errorModalState.message}
-          onClose={() => setErrorModalState({ isOpen: false, message: "" })}
-        />
-        <WinnerModal
-          winner={winnerModalState.winner}
-          isOpen={winnerModalState.isOpen}
-          onClose={() => setWinnerModalState({ isOpen: false, winner: null })}
-        />
-        <DrawStartingModal
-          isOpen={isDrawStartingModalOpen}
-          onClose={() => setIsDrawStartingModalOpen(false)}
-          timeRemaining={timeRemaining}
-        />
-        <RoomCard room={room} availableNumbers={availableNumbers} />
-        <ColorLegend />
-        <NumberGrid room={room} user={user!} assignNumber={assignNumber} />
-      </div>
-    </div>
-  );
-}
+  return {
+    room,
+    showCreditModal,
+    setShowCreditModal,
+    errorModalState,
+    setErrorModalState,
+    winnerModalState,
+    setWinnerModalState,
+    isDrawStartingModalOpen,
+    setIsDrawStartingModalOpen,
+    assignNumber,
+  };
+};
