@@ -8,6 +8,7 @@ export interface RoomsInterface {
   updatedAt: string;
   userWinnerId: number;
   winner: User;
+  drawStartTime?: string; // Agregado para la lógica del tiempo
 }
 
 export enum RoomStatus {

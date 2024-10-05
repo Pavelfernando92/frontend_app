@@ -19,8 +19,6 @@ export default function UpdateUserPage() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      console.log(userId);
-
       const fetchUser = async () => {
         try {
           const { data } = await lotussApi.get(`/usuarios/${userId}`, {

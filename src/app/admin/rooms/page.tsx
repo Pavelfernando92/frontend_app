@@ -4,14 +4,25 @@ import { RoomsInterface } from "@/app/(root)/interfaces/rooms.interface";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import lotussApi from "@/lib/axios";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { RoomsNumbers } from "@/app/(root)/interfaces/rooms.number.interface";
 
 function RoomsPage() {
   const { data: session } = useSession();
   const [room, setRoom] = useState<RoomsInterface>();
   const [loading, setLoading] = useState(true);
+  const [selectedNumber, setSelectedNumber] = useState<RoomsNumbers | null>(
+    null
+  );
 
   const getRoom = async () => {
     setLoading(true);
@@ -59,6 +70,12 @@ function RoomsPage() {
 
   const reloadRoom = () => {
     getRoom();
+  };
+
+  const handleNumberClick = (number: RoomsNumbers) => {
+    if (number.userId) {
+      setSelectedNumber(number);
+    }
   };
 
   return (
@@ -117,18 +134,49 @@ function RoomsPage() {
                   Números
                 </h3>
                 <div className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-2">
-                  {room.numbers.map((number) => (
-                    <div
-                      key={number.id}
-                      className={`p-2 text-center text-xs sm:text-sm rounded ${
-                        number.userId
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-secondary"
-                      }`}
-                    >
-                      {number.valor}
-                    </div>
-                  ))}
+                  {room.numbers
+                    .sort((a, b) => a.id - b.id)
+                    .map((number) => (
+                      <Dialog key={number.id}>
+                        <DialogTrigger asChild>
+                          <button
+                            className={`p-2 text-center text-xs sm:text-sm rounded w-full ${
+                              number.userId
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-secondary"
+                            }`}
+                            onClick={() => handleNumberClick(number)}
+                          >
+                            {number.valor}
+                          </button>
+                        </DialogTrigger>
+                        {number.userId && (
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Información del Número</DialogTitle>
+                            </DialogHeader>
+                            <div className="py-4">
+                              <p>
+                                <strong>Número:</strong> {number.valor}
+                              </p>
+                              <p>
+                                <strong>Usuario ID:</strong> {number.userId}
+                              </p>
+                              <p>
+                                <strong>Usuario Email:</strong>{" "}
+                                {number.user.email}
+                              </p>
+                              <p>
+                                <strong>Usuario Teléfono:</strong>{" "}
+                                {number.user.telefono}
+                              </p>
+
+                              {/* Add more user information here if available */}
+                            </div>
+                          </DialogContent>
+                        )}
+                      </Dialog>
+                    ))}
                 </div>
               </div>
             </>

@@ -29,6 +29,8 @@ const HistoryGames = () => {
             Authorization: `Bearer ${session.user.token}`,
           },
         });
+        console.log(res.data);
+
         setGames(res.data);
       } catch (error) {
         console.log(error);
@@ -38,7 +40,7 @@ const HistoryGames = () => {
   }, [session]);
 
   if (!session) {
-    return;
+    return null;
   }
 
   return (
@@ -48,30 +50,33 @@ const HistoryGames = () => {
           Juegos Recientes
         </CardTitle>
         <CardDescription className="text-[#FFD700] font-bold">
-          Tus ultimos 5 juegos
+          Tus últimos 5 juegos
         </CardDescription>
       </CardHeader>
       <CardContent>
         <ul className="space-y-4">
           {games.slice(0, 5).map((game, index) => (
             <li
-              key={index}
+              key={game.id}
               className="flex justify-between items-center border-b border-[#FFD700]/20 pb-2"
             >
               <div className="flex items-center">
                 <History className="mr-2 h-5 w-5 text-[#FFD700]" />
-                <span>Sala {game.salasParticipadas[index]?.id}</span>
+                <span>Sala {game.id}</span>
               </div>
               <div>
-                <span className="mr-2">Resultado:</span>
                 <span
                   className={
-                    game.salasParticipadas[index]
+                    game.winner?.id === session?.user.id
                       ? "text-green-400"
                       : "text-red-400"
                   }
                 >
-                  {game.salasParticipadas[index] ? "Ganado" : "Perdido"}
+                  {!game.winner
+                    ? "EN PROGRESO"
+                    : game.winner?.id === session?.user.id
+                    ? "Ganado"
+                    : "Perdido"}
                 </span>
               </div>
             </li>

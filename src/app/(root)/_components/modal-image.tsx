@@ -30,7 +30,6 @@ const ModalImage = ({ token, userId }: Props) => {
     const file = event.target.files?.[0];
     if (file) {
       setSelectedImage(file); // Guarda la imagen seleccionada
-      console.log("Image uploaded:", file);
     }
   };
 
