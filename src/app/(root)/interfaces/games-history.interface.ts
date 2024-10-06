@@ -8,4 +8,5 @@ export interface UserGameHistoryResponse {
   apellido_paterno: string; // User's last name
   creditos: number; // User's available credits
   salasParticipadas: RoomsInterface[]; // Array of game rooms the user participated in
+  updatedAt: Date;
 }

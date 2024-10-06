@@ -1,10 +1,9 @@
+// hooks/useGameLogic.ts
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { io, Socket } from "socket.io-client";
 import lotussApi from "@/lib/axios";
 import useUsersStore from "@/store/users.store";
-
-import { redirect } from "next/navigation";
 import { RoomsInterface } from "../../interfaces/rooms.interface";
 import { WinnerInterface } from "../../interfaces/winner.interface";
 
@@ -27,20 +26,31 @@ export const useGameLogic = () => {
     winner: null,
   });
   const [isDrawStartingModalOpen, setIsDrawStartingModalOpen] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+  const [config, setConfig] = useState<ConfigutarionInterface>();
 
   useEffect(() => {
     if (session && status === "authenticated") {
       fetchRoomData(session.user.token);
 
-      // Initialize socket connection
       socket = io(process.env.NEXT_PUBLIC_BACKEND_SOCKET!);
-
-      // Join room and listen for events
-      socket.emit("joinRoom", room?.id);
 
       socket.on("roomData", (roomData: RoomsInterface) => {
         setRoom(roomData);
+
+        if (roomData.status === "COMPLETA" && roomData.drawStartTime) {
+          const currentTime = new Date();
+          const drawStartTime = new Date(roomData.drawStartTime);
+          const timeRemaining = drawStartTime.getTime() - currentTime.getTime();
+
+          if (timeRemaining > 0) {
+            setTimeRemaining(Math.floor(timeRemaining / 1000));
+            setIsDrawStartingModalOpen(true);
+          }
+        }
       });
+
+      socket.emit("joinRoom", room?.id);
 
       socket.on("numberAssigned", (updatedNumber) => {
         setRoom((prevRoom) => {
@@ -53,7 +63,6 @@ export const useGameLogic = () => {
           };
         });
         setUser(user!.id, session.user.token);
-
         if (user!.creditos < 100) {
           setShowCreditModal(true);
         }
@@ -61,13 +70,12 @@ export const useGameLogic = () => {
 
       socket.on("roomComplete", () => {
         window.scrollTo({ top: 0, behavior: "smooth" });
-
         setIsDrawStartingModalOpen(true);
+      });
 
-        // Opcional: Puedes cerrar el modal después de 30 segundos
-        setTimeout(() => {
-          setIsDrawStartingModalOpen(false);
-        }, 30000);
+      socket.on("timeRemaining", (remainingTime: number) => {
+        setTimeRemaining(Math.floor(remainingTime / 1000));
+        setIsDrawStartingModalOpen(true);
       });
 
       socket.on("winnerSelected", (winnerData) => {
@@ -84,7 +92,7 @@ export const useGameLogic = () => {
       });
 
       socket.on("newRoomAvailable", () => {
-        fetchRoomData(session.user.token); // Fetch new room when available
+        fetchRoomData(session.user.token);
       });
 
       socket.on("error", (msg) => {
@@ -97,6 +105,32 @@ export const useGameLogic = () => {
     }
   }, [session, status, room?.id]);
 
+  useEffect(() => {
+    if (!session) {
+      return;
+    }
+    fetchConfigData(session.user.token);
+  }, [session]);
+
+  const fetchConfigData = async (token: string) => {
+    try {
+      const { data } = await lotussApi("/config", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setConfig({
+        minimumCredits: data.minimumCredits,
+        prizeAmount: data.prizeAmount,
+        totalOfNumbers: data.totalOfNumbers,
+      });
+    } catch (error) {
+      console.log(`Error al obtener la configuración`);
+      setErrorModalState({
+        isOpen: true,
+        message: "Error al obtener la configuración.",
+      });
+    }
+  };
+
   const fetchRoomData = async (token: string) => {
     try {
       const { data } = await lotussApi.get("/rooms", {
@@ -104,6 +138,7 @@ export const useGameLogic = () => {
       });
       setRoom(data[0]);
     } catch (error) {
+      console.error("Error fetching room:", error);
       setErrorModalState({
         isOpen: true,
         message: "Error fetching room data. Please try again later.",
@@ -111,7 +146,7 @@ export const useGameLogic = () => {
     }
   };
 
-  const assignNumber = (numberId: number, roomId: number) => {
+  const assignNumber = async (numberId: number, roomId: number) => {
     if (!session || !user || user.creditos < 100) {
       return setShowCreditModal(true);
     }
@@ -130,32 +165,10 @@ export const useGameLogic = () => {
     });
   };
 
-  useEffect(() => {
-    if (!user) {
-      redirect("/");
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (room && room.status === "COMPLETA" && room.drawStartTime) {
-      const currentTime = new Date().getTime(); // Obtiene el tiempo actual en milisegundos
-      const startTime = new Date(room.drawStartTime).getTime(); // Convierte a milisegundos
-
-      const timeElapsed = Math.floor((currentTime - startTime) / 1000); // Tiempo transcurrido en segundos
-
-      // 30 segundos menos el tiempo que ya ha pasado
-      const timeLeft = 30 - timeElapsed;
-
-      if (timeLeft > 0) {
-        setIsDrawStartingModalOpen(true);
-        setTimeout(() => {
-          setIsDrawStartingModalOpen(false);
-        }, timeLeft * 1000); // Ajusta el tiempo restante
-      }
-    }
-  }, [room]);
-
   return {
+    session,
+    user,
+    status,
     room,
     showCreditModal,
     setShowCreditModal,
@@ -165,6 +178,9 @@ export const useGameLogic = () => {
     setWinnerModalState,
     isDrawStartingModalOpen,
     setIsDrawStartingModalOpen,
+    timeRemaining,
     assignNumber,
+    fetchRoomData,
+    config,
   };
 };

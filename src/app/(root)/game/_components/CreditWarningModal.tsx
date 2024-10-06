@@ -12,11 +12,13 @@ import { Dispatch, SetStateAction } from "react";
 export interface CreditWarningModalProps {
   showModal: boolean;
   setShowModal: Dispatch<SetStateAction<boolean>>; // Cambiado aquí
+  totalNeeded: number;
 }
 
 const CreditWarningModal: React.FC<CreditWarningModalProps> = ({
   showModal,
   setShowModal,
+  totalNeeded,
 }) => {
   return (
     <Dialog open={showModal} onOpenChange={setShowModal}>
@@ -28,7 +30,8 @@ const CreditWarningModal: React.FC<CreditWarningModalProps> = ({
           </DialogTitle>
         </DialogHeader>
         <DialogDescription className="text-[#800020] text-lg">
-          No tienes suficientes coins para jugar. Necesitas al menos 100 coins.
+          No tienes suficientes coins para jugar. Necesitas al menos{" "}
+          {totalNeeded} coins.
         </DialogDescription>
         <div className="flex w-100 justify-center mt-4">
           <a
