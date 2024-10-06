@@ -1,6 +1,4 @@
-// hooks/useGameConfig.ts
-
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useSession } from "next-auth/react";
 import lotussApi from "@/lib/axios";
@@ -9,25 +7,26 @@ const useGameConfig = () => {
   const { toast } = useToast();
   const { data: session } = useSession();
 
-  const [cantidadGanancia, setCantidadGanancia] = useState<string>("");
-  const [monedasRequeridas, setMonedasRequeridas] = useState<string>("");
-  const [numerosTotales, setNumerosTotales] = useState<string>("");
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [configExist, setConfigExist] = useState<boolean>(false);
-  const [idConfig, setIdConfig] = useState<number | undefined>(undefined); // Iniciar como undefined
+  const [config, setConfig] = useState({
+    cantidadGanancia: "",
+    monedasRequeridas: "",
+    numerosTotales: "",
+    invitationsForReward: "",
+    invitationReward: "",
+  });
+  const [isEditing, setIsEditing] = useState(false);
+  const [configExist, setConfigExist] = useState(false);
+  const [idConfig, setIdConfig] = useState<number | undefined>();
 
-  // Función para cargar la configuración
-  const loadConfiguration = async () => {
+  const loadConfiguration = useCallback(async () => {
     if (!session) return;
 
     try {
-      const res = await lotussApi("/config", {
-        headers: {
-          Authorization: `Bearer ${session.user.token}`,
-        },
+      const { data } = await lotussApi.get("/config", {
+        headers: { Authorization: `Bearer ${session.user.token}` },
       });
 
-      if (res.data.msg === "Aun no hay configuración") {
+      if (data.msg === "Aun no hay configuración") {
         toast({
           title: "¡Ingresa la configuración!",
           description: "Todos los valores deben ser registrados.",
@@ -36,31 +35,30 @@ const useGameConfig = () => {
         return;
       }
 
-      // Establecer valores en el estado
-      setCantidadGanancia(res.data.prizeAmount);
-      setMonedasRequeridas(res.data.minimumCredits);
-      setNumerosTotales(res.data.totalOfNumbers);
+      setConfig({
+        cantidadGanancia: data.prizeAmount,
+        monedasRequeridas: data.minimumCredits,
+        numerosTotales: data.totalOfNumbers,
+        invitationsForReward: data.invitationsForReward,
+        invitationReward: data.invitationReward,
+      });
       setConfigExist(true);
-      setIdConfig(res.data.id);
+      setIdConfig(data.id);
     } catch (error) {
       console.error("Error al cargar configuración:", error);
     }
-  };
+  }, [session, toast]);
 
-  // Llamar a loadConfiguration al montarse el componente
   useEffect(() => {
     loadConfiguration();
-  }, [session]);
+  }, [loadConfiguration]);
 
-  // Función para manejar el envío del formulario
   const manejarEnvio = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (
-      Number(cantidadGanancia) <= 0 ||
-      Number(monedasRequeridas) <= 0 ||
-      Number(numerosTotales) <= 0
-    ) {
+    const { cantidadGanancia, monedasRequeridas, numerosTotales, invitationsForReward, invitationReward } = config;
+
+    if ([cantidadGanancia, monedasRequeridas, numerosTotales, invitationsForReward, invitationReward].some(value => Number(value) <= 0)) {
       toast({
         title: "Entrada inválida",
         description: "Todos los valores deben ser mayores que cero.",
@@ -70,8 +68,8 @@ const useGameConfig = () => {
     }
 
     try {
-      const endpoint = configExist ? `/config/${idConfig}` : "/config"; // Endpoint basado en si existe configuración
-      const method = configExist ? "put" : "post"; // Método basado en si existe configuración
+      const endpoint = configExist ? `/config/${idConfig}` : "/config";
+      const method = configExist ? "put" : "post";
 
       await lotussApi[method](
         endpoint,
@@ -79,11 +77,11 @@ const useGameConfig = () => {
           prizeAmount: Number(cantidadGanancia),
           minimumCredits: Number(monedasRequeridas),
           totalOfNumbers: Number(numerosTotales),
+          invitationsForReward: Number(invitationsForReward),
+          invitationReward: Number(invitationReward),
         },
         {
-          headers: {
-            Authorization: `Bearer ${session!.user.token}`,
-          },
+          headers: { Authorization: `Bearer ${session!.user.token}` },
         }
       );
 
@@ -93,33 +91,29 @@ const useGameConfig = () => {
         variant: "success",
       });
       setIsEditing(false);
-      setIdConfig(idConfig); // Mantener el mismo ID
     } catch (error) {
       toast({
         title: "¡Error!",
         description: "Error al grabar la información",
         variant: "destructive",
       });
-      console.log(error);
+      console.error("Error al grabar la configuración:", error);
     }
   };
 
-  // Función para alternar el estado de edición
-  const toggleEditing = () => {
-    setIsEditing((prev) => !prev);
+  const toggleEditing = () => setIsEditing(prev => !prev);
+
+  const handleInputChange = (field: string, value: string) => {
+    setConfig(prev => ({ ...prev, [field]: value }));
   };
 
   return {
-    cantidadGanancia,
-    setCantidadGanancia,
-    monedasRequeridas,
-    setMonedasRequeridas,
-    numerosTotales,
-    setNumerosTotales,
+    ...config,
     manejarEnvio,
     isEditing,
     toggleEditing,
     configExist,
+    handleInputChange,
   };
 };
 

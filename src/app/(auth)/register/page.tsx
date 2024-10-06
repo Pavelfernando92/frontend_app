@@ -104,7 +104,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto sm:max-w-lg lg:max-w-xl sm:p-6 lg:p-8">
+    <Card className="w-full max-w-md mx-auto sm:max-w-lg lg:max-w-xl sm:p-6 lg:p-2">
       <CardHeader>
         <div className="flex justify-center mb-4">
           <Image
@@ -127,7 +127,7 @@ export default function RegisterPage() {
             <AlertDescription>{alertInfo.message}</AlertDescription>
           </Alert>
         )}
-        {/* Alertas para mensajes de éxito o error */}
+        
         {responseRequest.msg && (
           <Alert
             variant={responseRequest.error ? "destructive" : "default"}
@@ -150,7 +150,7 @@ export default function RegisterPage() {
                 placeholder="john@example.com"
                 required
                 onChange={handleChange}
-                className="focus:ring-[#FF0000]"
+                className="focus:ring-[#FF0000] text-lg lg:text-sm"
               />
             </div>
             <div className="space-y-2">
@@ -163,7 +163,7 @@ export default function RegisterPage() {
                 required
                 autoComplete="on"
                 onChange={handleChange}
-                className="focus:ring-[#FF0000]"
+                className="focus:ring-[#FF0000] text-lg lg:text-sm"
               />
             </div>
           </div>
@@ -173,9 +173,10 @@ export default function RegisterPage() {
               <Input
                 id="nombre"
                 name="nombre"
+                placeholder="Tu nombre..."
                 required
                 onChange={handleChange}
-                className="focus:ring-[#FF0000]"
+                className="focus:ring-[#FF0000] text-lg lg:text-sm"
               />
             </div>
             <div className="space-y-2">
@@ -183,9 +184,10 @@ export default function RegisterPage() {
               <Input
                 id="apellido_paterno"
                 name="apellido_paterno"
+                placeholder="Tu apellido paterno..."
                 required
                 onChange={handleChange}
-                className="focus:ring-[#FF0000]"
+                className="focus:ring-[#FF0000] text-lg lg:text-base"
               />
             </div>
           </div>
@@ -196,8 +198,9 @@ export default function RegisterPage() {
                 id="apellido_materno"
                 name="apellido_materno"
                 required
+                placeholder="Tu apellido materno..."
                 onChange={handleChange}
-                className="focus:ring-[#FF0000]"
+                className="focus:ring-[#FF0000] text-lg lg:text-sm"
               />
             </div>
             <div className="space-y-2">
@@ -211,7 +214,6 @@ export default function RegisterPage() {
                   required: true,
                   autoFocus: false,
                 }}
-                placeholder="+523123122500"
                 containerStyle={{ width: "100%" }}
                 inputStyle={{ width: "100%" }}
               />
@@ -225,7 +227,19 @@ export default function RegisterPage() {
               type="date"
               required
               onChange={handleChange}
-              className="focus:ring-[#FF0000]"
+              className="focus:ring-[#FF0000] text-lg lg:text-base"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="invitationCode">
+              Código de Invitación (opcional)
+            </Label>
+            <Input
+              id="invitationCode"
+              name="invitationCode"
+              placeholder="Código de invitación..."
+              onChange={handleChange}
+              className="focus:ring-[#FF0000] text-lg lg:text-sm"
             />
           </div>
           <div className="flex items-center space-x-2">
