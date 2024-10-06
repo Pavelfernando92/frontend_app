@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
+  Bolt,
   BookMarked,
   Gamepad,
   LayoutDashboard,
@@ -74,6 +75,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: Props) => {
             <Button variant="ghost" className="w-full justify-start mb-2">
               <Wallet className="mr-2 h-4 w-4" />
               Retiros
+            </Button>
+          </Link>
+          <Link href="/admin/configuration" onClick={handleLinkClick}>
+            <Button variant="ghost" className="w-full justify-start mb-2">
+              <Bolt className="mr-2 h-4 w-4" />
+              Configuración
             </Button>
           </Link>
           <Separator className="my-4" />

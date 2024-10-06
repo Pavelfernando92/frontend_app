@@ -1,11 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+
+import { useEffect, useRef } from "react";
 import { redirect } from "next/navigation";
-import { io, Socket } from "socket.io-client";
-import lotussApi from "@/lib/axios";
-import useUsersStore from "@/store/users.store";
-import { RoomsInterface } from "../interfaces/rooms.interface";
 import { NoRoomsAvailable } from "./_components/NoRoomsAvailable";
 import CreditWarningModal from "./_components/CreditWarningModal";
 import RoomCard from "./_components/RoomCard";
@@ -13,154 +9,45 @@ import { ColorLegend } from "./_components/ColorLegend";
 import NumberGrid from "./_components/NumberGrid";
 import { ErrorModal } from "./_components/ErrorModal";
 import WinnerModal from "./_components/WinnerModal";
-import { WinnerInterface } from "../interfaces/winner.interface";
 import DrawStartingModal from "./_components/DrawStartingModal";
-
-let socket: Socket;
+import { useGameLogic } from "./hooks/useGameLogic";
+import { PrizeDisplay } from "./_components/PrizeDisplay";
 
 export default function GamePage() {
-  const { data: session, status } = useSession();
-  const { user, setUser } = useUsersStore();
-  const [room, setRoom] = useState<RoomsInterface | null>(null);
-  const [showCreditModal, setShowCreditModal] = useState(false);
-  const [errorModalState, setErrorModalState] = useState({
-    isOpen: false,
-    message: "",
-  });
-  const [winnerModalState, setWinnerModalState] = useState<{
-    isOpen: boolean;
-    winner: WinnerInterface | null;
-  }>({
-    isOpen: false,
-    winner: null,
-  });
-  const [isDrawStartingModalOpen, setIsDrawStartingModalOpen] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+  const {
+    session,
+    user,
+    room,
+    showCreditModal,
+    setShowCreditModal,
+    errorModalState,
+    setErrorModalState,
+    winnerModalState,
+    setWinnerModalState,
+    isDrawStartingModalOpen,
+    setIsDrawStartingModalOpen,
+    timeRemaining,
+    assignNumber,
+    config,
+  } = useGameLogic();
+
+  const gridRef = useRef<HTMLDivElement | null>(null); // Ref to the number grid
 
   useEffect(() => {
-    if (session && status === "authenticated") {
-      fetchRoomData(session.user.token);
-
-      socket = io(process.env.NEXT_PUBLIC_BACKEND_SOCKET!);
-
-      // Unirse a la sala al recibir el ID de la sala
-      socket.on("roomData", (roomData: RoomsInterface) => {
-        setRoom(roomData);
-
-        if (roomData.status === "COMPLETA" && roomData.drawStartTime) {
-          // Verificamos que drawStartTime no sea undefined
-          const currentTime = new Date();
-          const drawStartTime = new Date(roomData.drawStartTime);
-          const timeRemaining = drawStartTime.getTime() - currentTime.getTime();
-
-          if (timeRemaining > 0) {
-            setTimeRemaining(Math.floor(timeRemaining / 1000)); // Convertir a segundos
-            setIsDrawStartingModalOpen(true);
-          }
-        }
-      });
-
-      // Emitir evento de unirse a la sala
-      socket.emit("joinRoom", room?.id);
-
-      socket.on("numberAssigned", (updatedNumber) => {
-        setRoom((prevRoom) => {
-          if (!prevRoom) return null;
-          return {
-            ...prevRoom,
-            numbers: prevRoom.numbers.map((n) =>
-              n.id === updatedNumber.id ? updatedNumber : n
-            ),
-          };
-        });
-        setUser(user!.id, session.user.token);
-        if (user!.creditos < 100) {
-          setShowCreditModal(true);
-        }
-      });
-
-      socket.on("roomComplete", () => {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        setIsDrawStartingModalOpen(true);
-      });
-
-      socket.on("timeRemaining", (remainingTime: number) => {
-        setTimeRemaining(Math.floor(remainingTime / 1000));
-        setIsDrawStartingModalOpen(true); // Abrir el modal cuando se recibe el tiempo restante
-      });
-
-      socket.on("winnerSelected", (winnerData) => {
-        setWinnerModalState({
-          isOpen: true,
-          winner: {
-            id: winnerData.user.id,
-            name: winnerData.user.name,
-            apellido: winnerData.user.apellido_paterno,
-            image: winnerData.user.profilePicture,
-            winningNumber: winnerData.winner.valor,
-          },
-        });
-      });
-
-      socket.on("newRoomAvailable", () => {
-        fetchRoomData(session.user.token);
-      });
-
-      socket.on("error", (msg) => {
-        handleAssignNumberError(msg);
-      });
-
-      return () => {
-        socket.disconnect();
-      };
-    }
-  }, [session, status, room?.id]);
-
-  const fetchRoomData = async (token: string) => {
-    try {
-      const { data } = await lotussApi.get("/rooms", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setRoom(data[0]);
-    } catch (error) {
-      console.error("Error fetching room:", error);
-      setErrorModalState({
-        isOpen: true,
-        message: "Error fetching room data. Please try again later.",
-      });
-    }
-  };
-
-  const assignNumber = async (numberId: number, roomId: number) => {
-    if (!session || !user || user.creditos < 100) {
-      return setShowCreditModal(true);
-    }
-
-    socket.emit("assignNumber", {
-      idNumber: numberId,
-      idUser: user.id,
-      idRoom: roomId,
-    });
-  };
-
-  const handleAssignNumberError = (error: any) => {
-    setErrorModalState({
-      isOpen: true,
-      message: "Ocurrió un error al intentar asignar el número.",
-    });
-  };
-
-  useEffect(() => {
-    if (!user) {
+    if (!session?.user) {
       redirect("/");
     }
-  }, [user]);
+  }, [session]);
 
   useEffect(() => {
     if (user && user.creditos < 100) {
       setShowCreditModal(true);
     }
-  }, []);
+  }, [session]);
+
+  const handleParticipateClick = () => {
+    gridRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   if (!room) {
     return <NoRoomsAvailable />;
@@ -174,6 +61,7 @@ export default function GamePage() {
         <CreditWarningModal
           showModal={showCreditModal}
           setShowModal={setShowCreditModal}
+          totalNeeded={config?.minimumCredits || 0}
         />
         <ErrorModal
           isOpen={errorModalState.isOpen}
@@ -190,9 +78,26 @@ export default function GamePage() {
           onClose={() => setIsDrawStartingModalOpen(false)}
           timeRemaining={timeRemaining}
         />
-        <RoomCard room={room} availableNumbers={availableNumbers} />
+
+        {/* Prize Display */}
+        <PrizeDisplay
+          prizeAmount={config?.prizeAmount || 0}
+          onParticipateClick={handleParticipateClick}
+        />
+
+        {/* Room Card */}
+        <RoomCard
+          room={room}
+          availableNumbers={availableNumbers}
+          totalOfNumbers={config?.totalOfNumbers || 0}
+        />
+
         <ColorLegend />
-        <NumberGrid room={room} user={user!} assignNumber={assignNumber} />
+
+        {/* Number Grid */}
+        <div ref={gridRef}>
+          <NumberGrid room={room} user={user!} assignNumber={assignNumber} />
+        </div>
       </div>
     </div>
   );

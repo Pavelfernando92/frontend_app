@@ -5,9 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export interface RoomCardProps {
   room: RoomsInterface;
   availableNumbers: number;
+  totalOfNumbers: number;
 }
 
-const RoomCard: React.FC<RoomCardProps> = ({ room, availableNumbers }) => {
+const RoomCard: React.FC<RoomCardProps> = ({
+  room,
+  availableNumbers,
+  totalOfNumbers,
+}) => {
   return (
     <Card className="mb-8 bg-white/10 backdrop-blur-lg border-none">
       <CardHeader>
@@ -22,7 +27,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, availableNumbers }) => {
               Números Disponibles:
             </p>
             <p className="text-2xl sm:text-3xl font-bold text-yellow-300">
-              {availableNumbers} / 100
+              {availableNumbers} / {totalOfNumbers}
             </p>
           </div>
           <div>
@@ -33,7 +38,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, availableNumbers }) => {
               variant={room.status === "ABIERTA" ? "default" : "secondary"}
               className="text-base sm:text-lg bg-yellow-300 text-[#800020]"
             >
-              {room.status}
+              {room.status === "COMPLETA" ? "SORTEANDO" : room.status}
             </Badge>
           </div>
         </div>

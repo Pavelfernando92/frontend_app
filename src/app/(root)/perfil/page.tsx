@@ -15,6 +15,7 @@ import useUsersStore from "@/store/users.store";
 import { Coins, History, UserPlus } from "lucide-react";
 import React, { useState } from "react";
 import HistoryGames from "./_components/HistoryGames";
+import InviteFriends from "./_components/InviteFriends";
 
 export default function PerfilPage() {
   const { user } = useUsersStore();
@@ -84,44 +85,17 @@ export default function PerfilPage() {
       <Tabs defaultValue="history" className="mt-8">
         <TabsList className="grid w-full grid-cols-2 bg-[#FFFFFF]/10">
           <TabsTrigger value="history" className="text-[#FFD700]">
-            Game History
+            Historial de Juegos
           </TabsTrigger>
           <TabsTrigger value="invite" className="text-[#FFD700]">
-            Invite Friends
+            Invita Amigos
           </TabsTrigger>
         </TabsList>
         <TabsContent value="history">
           <HistoryGames />
         </TabsContent>
         <TabsContent value="invite">
-          <Card className="bg-[#FFFFFF]/10 backdrop-blur-lg text-white">
-            <CardHeader>
-              <CardTitle className="text-[#FFD700]">Invita Amigos</CardTitle>
-              <CardDescription>
-                Gana premios invitando a tus amigos
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleInvite} className="space-y-4">
-                <div className="flex flex-col space-y-1.5">
-                  <Label htmlFor="inviteEmail">Friend's Email</Label>
-                  <Input
-                    id="inviteEmail"
-                    placeholder="Enter your friend's email"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    className="bg-[#FFFFFF]/20 text-white placeholder-[#FFFFFF]/50"
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  className="w-full bg-[#FFD700] text-[#800020] hover:bg-[#FFFFFF] hover:text-[#800020]"
-                >
-                  <UserPlus className="mr-2 h-4 w-4" /> Send Invitation
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+          <InviteFriends />
         </TabsContent>
       </Tabs>
     </main>
