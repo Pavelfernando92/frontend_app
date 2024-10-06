@@ -14,28 +14,97 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+import { useSession } from "next-auth/react";
+import lotussApi from "@/lib/axios";
+import { useGameLogic } from "../../game/hooks/useGameLogic";
+import { useConfig } from "@/app/admin/configuration/hooks/useConfig";
+import { useOrigin } from "@/hooks/use-origin";
+
 export default function InviteFriends() {
+  const { data: session } = useSession();
+  const { config } = useConfig();
+  const origin = useOrigin();
+
+  const BASE_URL = `${origin}/register`;
+
   const [inviteLink, setInviteLink] = useState("");
   const [copied, setCopied] = useState(false);
+  const [invitationCode, setInvitationCode] = useState("");
+
+  const createInvitation = async (id: number, token: string) => {
+    if (!id || !token) {
+      return;
+    }
+    try {
+      const response = await lotussApi.post(
+        "invitations",
+        {
+          userId: id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const { code } = response.data.invitation;
+      setInvitationCode(code);
+      setInviteLink(code);
+    } catch (error) {
+      console.error("Error creando la invitación:", error);
+    }
+  };
 
   useEffect(() => {
-    // Simular la generación de un enlace de invitación
-    setInviteLink(
-      `https://tuapp.com/invite/${Math.random().toString(36).substr(2, 8)}`
-    );
-  }, []);
+    if (!session) {
+      return;
+    }
+    createInvitation(session.user.id, session.user.token);
+  }, [session]);
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(inviteLink);
-    setCopied(true);
+    const baseUrl = `${BASE_URL}`; // Cambia esto por tu BASE URL
+    const message = `🌟 ¡Únete a Lotuss! Regístrate usando el código: ${inviteLink} 🌟\n\n🔗 ${baseUrl}`;
 
+    if (navigator.clipboard) {
+      navigator.clipboard
+        .writeText(message)
+        .then(() => {
+          setCopied(true);
+          launchConfetti();
+          setTimeout(() => setCopied(false), 2000);
+        })
+        .catch((err) => console.error("Failed to copy: ", err));
+    } else {
+      // Fallback for unsupported browsers
+      fallbackCopyToClipboard(message);
+    }
+  };
+
+  const fallbackCopyToClipboard = (text: string) => {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand("copy");
+      setCopied(true);
+      launchConfetti();
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Fallback: Unable to copy text", err);
+    }
+    document.body.removeChild(textarea);
+  };
+
+  const launchConfetti = () => {
     confetti({
       particleCount: 100,
       spread: 70,
       origin: { y: 0.6 },
     });
-    setTimeout(() => setCopied(false), 2000);
   };
+
   return (
     <Card className="bg-gradient-to-br from-[#800020] to-[#4a0012] text-white shadow-lg">
       <CardHeader>
@@ -97,7 +166,7 @@ export default function InviteFriends() {
                   className="flex items-center justify-center"
                 >
                   <Copy className="mr-2 h-4 w-4" />
-                  Copiar enlace
+                  Copiar código de invitación
                 </motion.span>
               )}
             </AnimatePresence>
@@ -111,7 +180,9 @@ export default function InviteFriends() {
         >
           <p className="text-[#FFD700] font-semibold flex items-center justify-center">
             <Sparkles className="mr-2 h-5 w-5" />
-            ¡Invita a 5 amigos y obtén un premio especial!
+            ¡Invita a {config?.invitationsForReward} amigos y obtén{" "}
+            {config?.invitationReward} COINS como recompensa!
+            <Sparkles className="mr-2 h-5 w-5" />
           </p>
         </motion.div>
       </CardContent>

@@ -95,6 +95,7 @@ export default function LoginPage() {
               placeholder="john@example.com"
               required
               onChange={handleChange}
+              className="text-lg md:text-sm"
             />
           </div>
           <div className="space-y-2">
@@ -107,6 +108,7 @@ export default function LoginPage() {
               autoComplete="on"
               required
               onChange={handleChange}
+              className="text-lg md:text-sm"
             />
           </div>
           <Button

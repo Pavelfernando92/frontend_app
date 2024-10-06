@@ -42,17 +42,20 @@ const useRegistro = () => {
       error: false,
       msg: "",
     });
+
     try {
       const res = await lotussApi.post("/auth/register", formData);
       setResponseRequest({
         error: false,
-        msg: res.data.msg,
+        msg: res.data.msg, // Este mensaje puede ser de éxito o de error de invitación
       });
+
       const resLogin = await signIn("credentials", {
         email: formData.email,
         password: formData.password,
         redirect: false,
       });
+
       if (resLogin?.ok) router.push("/");
     } catch (error) {
       if (error instanceof AxiosError && error.response) {

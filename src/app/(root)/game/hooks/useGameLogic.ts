@@ -6,6 +6,7 @@ import lotussApi from "@/lib/axios";
 import useUsersStore from "@/store/users.store";
 import { RoomsInterface } from "../../interfaces/rooms.interface";
 import { WinnerInterface } from "../../interfaces/winner.interface";
+import { ConfigutarionInterface } from "../../interfaces/config.interface";
 
 let socket: Socket;
 
