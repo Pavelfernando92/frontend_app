@@ -42,6 +42,14 @@ export default function DrawStartingModal({
     }
   }, [countdown, onClose]);
 
+  // Calcula el porcentaje de tiempo restante
+  const getProgress = () => {
+    if (countdown !== null && timeRemaining !== null) {
+      return countdown / timeRemaining;
+    }
+    return 0;
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px] bg-gradient-to-br from-[#800020] to-[#4d0013] text-white border-[#800020]">
@@ -73,12 +81,11 @@ export default function DrawStartingModal({
                 cy="50"
                 r="40"
                 fill="transparent"
-                initial={{ pathLength: 0 }}
+                initial={false} // Cambiamos esto para que no reinicie en 0
                 animate={{
-                  pathLength:
-                    countdown !== null ? countdown / (timeRemaining ?? 30) : 0,
+                  pathLength: getProgress(), // Ajusta la longitud del camino basado en el progreso
                 }}
-                transition={{ duration: timeRemaining ?? 30, ease: "linear" }}
+                transition={{ duration: 1, ease: "linear" }} // Transición de 1 segundo, actualizada con cada tick
               ></motion.circle>
             </svg>
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-3xl font-bold text-[#ffd700]">

@@ -69,9 +69,14 @@ export const useGameLogic = () => {
         }
       });
 
-      socket.on("roomComplete", () => {
+      socket.on("roomComplete", (roomComplete) => {
+        const currentTime = new Date();
+        const drawStartTime = new Date(roomComplete.drawStartTime);
+        const timeRemaining = drawStartTime.getTime() - currentTime.getTime();
+
         window.scrollTo({ top: 0, behavior: "smooth" });
         setIsDrawStartingModalOpen(true);
+        setTimeRemaining(Math.floor(timeRemaining / 1000));
       });
 
       socket.on("timeRemaining", (remainingTime: number) => {
@@ -84,7 +89,7 @@ export const useGameLogic = () => {
           isOpen: true,
           winner: {
             id: winnerData.user.id,
-            name: winnerData.user.name,
+            name: winnerData.user.nombre,
             apellido: winnerData.user.apellido_paterno,
             image: winnerData.user.profilePicture,
             winningNumber: winnerData.winner.valor,
