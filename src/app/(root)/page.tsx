@@ -14,9 +14,9 @@ import Banner from "../../../public/images/Banner.gif";
 
 const RootPage = () => {
   const { data: session, status } = useSession();
-  const { setUser, user } = useUsersStore();
+  const { user } = useUsersStore();
 
-  const [espaciosDisponibles, setEspaciosDisponibles] = useState(100);
+  const [espaciosDisponibles] = useState(100);
   const [estadoSala, setEstadoSala] = useState("abierta");
   const [numeroActual, setNumeroActual] = useState<number | null>(null);
   const [numerosComprados, setNumerosComprados] = useState<number[]>([]);

@@ -27,7 +27,7 @@ const NumberGrid: React.FC<NumberGridProps> = ({
         <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-2">
           {user &&
             room.numbers
-              .sort((a: any, b: any) => a.id - b.id)
+              .sort((a: RoomsNumbers, b: RoomsNumbers) => a.id - b.id)
               .map((number: RoomsNumbers) => (
                 <NumberItem
                   key={number.id}

@@ -20,6 +20,7 @@ function RoomsPage() {
   const { data: session } = useSession();
   const [room, setRoom] = useState<RoomsInterface>();
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedNumber, setSelectedNumber] = useState<RoomsNumbers | null>(
     null
   );

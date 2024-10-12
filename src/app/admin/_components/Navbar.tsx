@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import useUsersStore from "@/store/users.store";
 import { Menu } from "lucide-react";
+import { Session } from "next-auth";
 import React from "react";
 
 type Props = {
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
-  session: any;
+  session: Session | null;
 };
 
 const Navbar = (props: Props) => {
@@ -16,7 +17,7 @@ const Navbar = (props: Props) => {
   const { user } = useUsersStore();
 
   if (!session) {
-    return;
+    return null;
   }
 
   return (
@@ -33,7 +34,11 @@ const Navbar = (props: Props) => {
           </Button>
           <div className="flex items-center gap-3">
             <Avatar>
-              <AvatarImage className="object-cover" src={user?.profilePicture} alt="Foto de perfil" />
+              <AvatarImage
+                className="object-cover"
+                src={user?.profilePicture}
+                alt="Foto de perfil"
+              />
               <AvatarFallback>User</AvatarFallback>
             </Avatar>
             <span className="font-bold">{session.user.nombre}</span>

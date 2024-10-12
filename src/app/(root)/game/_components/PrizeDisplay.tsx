@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { CoinsIcon } from "lucide-react";
 import { motion } from "framer-motion";
 

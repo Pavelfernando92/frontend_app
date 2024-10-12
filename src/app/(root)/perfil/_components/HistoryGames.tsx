@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { History, ChevronRight, Trophy, X } from "lucide-react";
+import { History, ChevronRight } from "lucide-react";
 import lotussApi from "@/lib/axios";
 import { UserGameHistoryResponse } from "../../interfaces/games-history.interface";
 import {
