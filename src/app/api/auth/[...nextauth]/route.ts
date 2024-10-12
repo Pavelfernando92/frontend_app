@@ -1,6 +1,8 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { NextResponse } from "next/server";
 
+// Define tus opciones de autenticación
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -24,7 +26,7 @@ export const authOptions: NextAuthOptions = {
         const user = await res.json();
 
         if (!user.ok) {
-          throw { ok: user.ok, msg: user.msg };
+          throw new Error(user.msg);
         }
         return user;
       },
@@ -35,7 +37,7 @@ export const authOptions: NextAuthOptions = {
       return { ...token, ...user };
     },
     async session({ session, token }) {
-      session.user = token as any;
+      session.user = token as any; // Asegúrate de manejar esto adecuadamente
       return session;
     },
   },
@@ -44,6 +46,14 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-// Exportar el handler
+// Exportar el handler para las rutas GET y POST
 const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
+
+// Maneja las solicitudes de ruta
+export async function GET(req: Request) {
+  return await handler(req);
+}
+
+export async function POST(req: Request) {
+  return await handler(req);
+}
