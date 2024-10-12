@@ -1,7 +1,8 @@
 import { getServerSession } from "next-auth";
 import TotalUsers from "./_components/TotalUsers";
-import { authOptions } from "../api/auth/[...nextauth]/route";
+
 import { redirect } from "next/navigation";
+import authOptions from "@/lib/authOptions";
 
 const AdminPage = async () => {
   const session = await getServerSession(authOptions);
