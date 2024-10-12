@@ -1,9 +1,8 @@
 import lotussApi from "@/lib/axios";
 import { useSession } from "next-auth/react";
-import { useEffect } from "react";
 
 const useRetiros = () => {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
 
   const createRetiro = async (data: CreateRetiroInterface) => {
     const res = await lotussApi.post("withdrawals", data, {
@@ -14,7 +13,7 @@ const useRetiros = () => {
     return res.data;
   };
 
-  const getRetiros = async (id: number): Promise<RetirosInterface[]> => {
+  const getRetiros = async (_: number): Promise<RetirosInterface[]> => { // eslint-disable-line @typescript-eslint/no-unused-vars
     const res = await lotussApi("withdrawals", {
       headers: {
         Authorization: `Bearer ${session?.user.token}`,

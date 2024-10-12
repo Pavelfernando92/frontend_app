@@ -26,6 +26,7 @@ import lotussApi from "@/lib/axios";
 import { signOut, useSession } from "next-auth/react";
 import useUsersStore from "@/store/users.store";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Props = {
   toast: any;
   user: User;

@@ -1,7 +1,6 @@
 import lotussApi from "@/lib/axios";
 import { AxiosError } from "axios";
 import { signIn } from "next-auth/react";
-import { redirect } from "next/navigation";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 

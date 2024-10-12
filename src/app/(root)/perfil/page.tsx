@@ -1,32 +1,16 @@
 "use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useUsersStore from "@/store/users.store";
-import { Coins, History, UserPlus } from "lucide-react";
-import React, { useState } from "react";
+import { Coins } from "lucide-react";
+import React from "react";
 import HistoryGames from "./_components/HistoryGames";
 import InviteFriends from "./_components/InviteFriends";
 
 export default function PerfilPage() {
   const { user } = useUsersStore();
-  const [inviteEmail, setInviteEmail] = useState("");
-
-  const handleInvite = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Here you would typically send the invitation
-    alert(`Invitation sent to ${inviteEmail}`);
-    setInviteEmail("");
-  };
 
   if (!user) {
     return;

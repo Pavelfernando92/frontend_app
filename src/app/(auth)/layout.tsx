@@ -9,7 +9,7 @@ export default function AuthLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { data: session, status } = useSession();
+  const { data: _, status } = useSession(); // eslint-disable-line @typescript-eslint/no-unused-vars
   const router = useRouter();
 
   useEffect(() => {

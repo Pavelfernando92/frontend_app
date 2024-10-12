@@ -164,7 +164,7 @@ export const useGameLogic = () => {
     });
   };
 
-  const handleAssignNumberError = (error: any) => {
+  const handleAssignNumberError = (msg: unknown) => { // eslint-disable-line @typescript-eslint/no-unused-vars
     setErrorModalState({
       isOpen: true,
       message: "Ocurrió un error al intentar asignar el número.",

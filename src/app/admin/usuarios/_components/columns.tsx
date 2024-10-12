@@ -1,11 +1,17 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, Row } from "@tanstack/react-table";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import ActionsMenu from "./actions-menu";
+
+const ActionsCell = ({ row }: { row: Row<User> }) => {
+  const { toast } = useToast();
+  const user = row.original; // Esto ahora tiene el tipo `User`
+  const router = useRouter();
+  return <ActionsMenu toast={toast} user={user} router={router} />;
+};
 
 export const columns: ColumnDef<User>[] = [
   {
@@ -36,11 +42,6 @@ export const columns: ColumnDef<User>[] = [
   {
     header: "Acciones",
     id: "actions",
-    cell: ({ row }) => {
-      const { toast } = useToast();
-      const user = row.original;
-      const router = useRouter();
-      return <ActionsMenu toast={toast} user={user} router={router} />;
-    },
+    cell: ({ row }) => <ActionsCell row={row} />, // Ahora 'row' tiene el tipo correcto
   },
 ];

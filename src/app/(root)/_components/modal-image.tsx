@@ -45,7 +45,7 @@ const ModalImage = ({ token, userId }: Props) => {
     setLoading(true); // Activa el estado de carga
 
     try {
-      const res = await lotussApi.put(
+      await lotussApi.put(
         `/usuarios/${userId}`,
         formData, // Pasa el formData directamente
         {

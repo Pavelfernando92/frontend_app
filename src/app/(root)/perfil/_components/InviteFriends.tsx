@@ -16,7 +16,6 @@ import {
 
 import { useSession } from "next-auth/react";
 import lotussApi from "@/lib/axios";
-import { useGameLogic } from "../../game/hooks/useGameLogic";
 import { useConfig } from "@/app/admin/configuration/hooks/useConfig";
 import { useOrigin } from "@/hooks/use-origin";
 
@@ -29,7 +28,6 @@ export default function InviteFriends() {
 
   const [inviteLink, setInviteLink] = useState("");
   const [copied, setCopied] = useState(false);
-  const [invitationCode, setInvitationCode] = useState("");
 
   const createInvitation = async (id: number, token: string) => {
     if (!id || !token) {
@@ -48,7 +46,6 @@ export default function InviteFriends() {
         }
       );
       const { code } = response.data.invitation;
-      setInvitationCode(code);
       setInviteLink(code);
     } catch (error) {
       console.error("Error creando la invitación:", error);
