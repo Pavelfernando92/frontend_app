@@ -17,9 +17,12 @@ const useGameConfig = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [configExist, setConfigExist] = useState(false);
   const [idConfig, setIdConfig] = useState<number | undefined>();
+  const [isLoading, setIsLoading] = useState(false); // Estado isLoading
 
   const loadConfiguration = useCallback(async () => {
     if (!session) return;
+
+    setIsLoading(true); // Inicia la carga
 
     try {
       const { data } = await lotussApi.get("/config", {
@@ -46,6 +49,8 @@ const useGameConfig = () => {
       setIdConfig(data.id);
     } catch (error) {
       console.error("Error al cargar configuración:", error);
+    } finally {
+      setIsLoading(false); // Finaliza la carga
     }
   }, [session, toast]);
 
@@ -56,9 +61,23 @@ const useGameConfig = () => {
   const manejarEnvio = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const { cantidadGanancia, monedasRequeridas, numerosTotales, invitationsForReward, invitationReward } = config;
+    const {
+      cantidadGanancia,
+      monedasRequeridas,
+      numerosTotales,
+      invitationsForReward,
+      invitationReward,
+    } = config;
 
-    if ([cantidadGanancia, monedasRequeridas, numerosTotales, invitationsForReward, invitationReward].some(value => Number(value) <= 0)) {
+    if (
+      [
+        cantidadGanancia,
+        monedasRequeridas,
+        numerosTotales,
+        invitationsForReward,
+        invitationReward,
+      ].some((value) => Number(value) <= 0)
+    ) {
       toast({
         title: "Entrada inválida",
         description: "Todos los valores deben ser mayores que cero.",
@@ -66,6 +85,8 @@ const useGameConfig = () => {
       });
       return;
     }
+
+    setIsLoading(true); // Inicia la carga al enviar
 
     try {
       const endpoint = configExist ? `/config/${idConfig}` : "/config";
@@ -98,13 +119,15 @@ const useGameConfig = () => {
         variant: "destructive",
       });
       console.error("Error al grabar la configuración:", error);
+    } finally {
+      setIsLoading(false); // Finaliza la carga al enviar
     }
   };
 
-  const toggleEditing = () => setIsEditing(prev => !prev);
+  const toggleEditing = () => setIsEditing((prev) => !prev);
 
   const handleInputChange = (field: string, value: string) => {
-    setConfig(prev => ({ ...prev, [field]: value }));
+    setConfig((prev) => ({ ...prev, [field]: value }));
   };
 
   return {
@@ -114,6 +137,7 @@ const useGameConfig = () => {
     toggleEditing,
     configExist,
     handleInputChange,
+    isLoading, // Exporta el estado isLoading
   };
 };
 
