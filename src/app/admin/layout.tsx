@@ -1,15 +1,39 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { signOut, useSession } from "next-auth/react";
 
 import Sidebar from "./_components/Sidebar";
 import Navbar from "./_components/Navbar";
-import { useSession } from "next-auth/react";
+import useUsersStore from "@/store/users.store";
+
 interface Props {
   children: React.ReactNode;
 }
+
 export default function AdminLayout({ children }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { data: session } = useSession();
+  const { setUser, error } = useUsersStore();
+  useEffect(() => {
+    if (session) {
+      const expiresAt = new Date(session.expires).getTime();
+      const currentTime = Date.now();
+
+      // If the session is already expired, log out immediately
+      if (currentTime >= expiresAt) {
+        signOut();
+      } else {
+        setUser(session.user.id, session.user.token);
+      }
+    }
+  }, [session]);
+
+  useEffect(() => {
+    if (error) {
+      signOut();
+    }
+  }, [error]);
+
   return (
     <div className="flex h-screen bg-gray-100">
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />

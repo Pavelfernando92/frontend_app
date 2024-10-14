@@ -18,6 +18,7 @@ import useRetiros from "./hooks/useRetiros";
 import CardInfo from "./_components/card-info";
 import CardHistory from "./_components/card-history";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function WithdrawalPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -26,6 +27,8 @@ export default function WithdrawalPage() {
   const [withdrawalHistory, setWithdrawalHistory] = useState<
     RetirosInterface[]
   >([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
   const { toast } = useToast();
 
   const { data: session, status } = useSession();
@@ -35,11 +38,15 @@ export default function WithdrawalPage() {
   useEffect(() => {
     if (status === "authenticated" && session?.user?.token) {
       getUsers(session.user.token);
+      setIsLoading(false);
+    } else if (status !== "loading") {
+      setIsLoading(false);
     }
   }, [status, session, getUsers]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSearching(true);
     const normalizePhoneNumber = (phone: string) => {
       return phone.replace(/^\+?52?/, "").slice(-10);
     };
@@ -76,6 +83,7 @@ export default function WithdrawalPage() {
         variant: "destructive",
       });
     }
+    setIsSearching(false);
   };
 
   const handleWithdrawal = async (e: React.FormEvent) => {
@@ -125,6 +133,26 @@ export default function WithdrawalPage() {
     setWithdrawalAmount(e.target.value);
   };
 
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 lg:px-8 xl:px-16">
+        <Skeleton className="h-8 w-64 mb-4 lg:mb-6" />
+        <Card className="w-full max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto">
+          <CardHeader>
+            <Skeleton className="h-6 w-48 mb-2" />
+            <Skeleton className="h-4 w-64" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-32" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 lg:px-8 xl:px-16">
       <h1 className="text-2xl lg:text-3xl font-bold mb-4 lg:mb-6">
@@ -152,14 +180,28 @@ export default function WithdrawalPage() {
                 className="w-full text-sm lg:text-base"
               />
             </div>
-            <Button type="submit" className="w-full sm:w-auto lg:text-lg">
-              Buscar
+            <Button
+              type="submit"
+              className="w-full sm:w-auto lg:text-lg"
+              disabled={isSearching}
+            >
+              {isSearching ? "Buscando..." : "Buscar"}
             </Button>
           </form>
         </CardContent>
       </Card>
 
-      {foundUser && (
+      {isSearching ? (
+        <Card className="w-full max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto mt-8 lg:mt-12">
+          <CardHeader>
+            <Skeleton className="h-6 w-48 mb-2" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-10 w-full mb-4" />
+            <Skeleton className="h-32 w-full" />
+          </CardContent>
+        </Card>
+      ) : foundUser ? (
         <Card className="w-full max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto mt-8 lg:mt-12">
           <CardHeader>
             <CardTitle className="text-lg lg:text-2xl">
@@ -190,7 +232,7 @@ export default function WithdrawalPage() {
             </Tabs>
           </CardContent>
         </Card>
-      )}
+      ) : null}
     </div>
   );
 }

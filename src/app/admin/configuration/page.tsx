@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import useGameConfig from "./hooks/useGameConfig";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ConfiguracionPage: React.FC = () => {
   const {
@@ -18,7 +19,30 @@ const ConfiguracionPage: React.FC = () => {
     toggleEditing,
     configExist,
     handleInputChange,
+    isLoading,
   } = useGameConfig();
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-8">
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-8 w-64" />
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="space-y-2">
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            ))}
+            <Skeleton className="h-12 w-full" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8">
@@ -173,6 +197,7 @@ const ConfiguracionPage: React.FC = () => {
               Editar Configuración
             </Button>
           )}
+          {!configExist && <Button>Crear Configuración</Button>}
         </CardContent>
       </Card>
     </div>

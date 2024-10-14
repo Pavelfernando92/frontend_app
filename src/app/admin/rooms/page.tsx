@@ -3,7 +3,6 @@
 import { RoomsInterface } from "@/app/(root)/interfaces/rooms.interface";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -15,12 +14,14 @@ import lotussApi from "@/lib/axios";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { RoomsNumbers } from "@/app/(root)/interfaces/rooms.number.interface";
+import { RefreshCw, Users, Clock, Award } from "lucide-react";
+import { InfoItem } from "./_components/InfoItem";
+import { RoomSkeleton } from "./_components/RoomSkeleton";
 
 function RoomsPage() {
   const { data: session } = useSession();
   const [room, setRoom] = useState<RoomsInterface>();
   const [loading, setLoading] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedNumber, setSelectedNumber] = useState<RoomsNumbers | null>(
     null
   );
@@ -80,71 +81,96 @@ function RoomsPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 space-y-4 sm:space-y-0">
         <h2 className="text-2xl sm:text-3xl font-bold">Sala en Vivo</h2>
-        {!room && <Button onClick={handleClick}>Crear Sala</Button>}
-        {room && <Button onClick={reloadRoom}>Recargar Sala</Button>}
+        {!room && (
+          <Button onClick={handleClick} variant="outline">
+            Crear Sala
+          </Button>
+        )}
+        {room && (
+          <Button onClick={reloadRoom} variant="outline">
+            <RefreshCw className="mr-2 h-4 w-4" /> Recargar Sala
+          </Button>
+        )}
       </div>
 
-      <Card className="w-full">
-        <CardHeader>
+      <Card className="w-full shadow-lg overflow-hidden">
+        <CardHeader className="bg-[#800020] text-white">
           <CardTitle className="text-xl sm:text-2xl">
             Detalles de la Sala
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6 bg-gradient-to-br from-[#800020] to-[#4a0012] text-white">
           {loading ? (
             <RoomSkeleton />
           ) : room ? (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                <div className="space-y-2">
-                  <p className="text-sm sm:text-base">
-                    <strong>ID:</strong> {room.id}
-                  </p>
-                  <p className="text-sm sm:text-base">
-                    <strong>Estado:</strong> {room.status}
-                  </p>
-                  <p className="text-sm sm:text-base">
-                    <strong>Creada:</strong>{" "}
-                    {new Date(room.createdAt).toLocaleString()}
-                  </p>
-                  <p className="text-sm sm:text-base">
-                    <strong>Actualizada:</strong>{" "}
-                    {new Date(room.updatedAt).toLocaleString()}
-                  </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+                <div className="space-y-4">
+                  <InfoItem
+                    icon={<Clock className="h-5 w-5" />}
+                    label="ID"
+                    value={String(room.id)}
+                  />
+                  <InfoItem
+                    icon={<Users className="h-5 w-5" />}
+                    label="Estado"
+                    value={room.status}
+                  />
+                  <InfoItem
+                    icon={<Clock className="h-5 w-5" />}
+                    label="Creada"
+                    value={new Date(room.createdAt).toLocaleString()}
+                  />
+                  <InfoItem
+                    icon={<Clock className="h-5 w-5" />}
+                    label="Actualizada"
+                    value={new Date(room.updatedAt).toLocaleString()}
+                  />
                 </div>
-                <div className="space-y-2">
-                  <p className="text-sm sm:text-base">
-                    <strong>Ganador:</strong>{" "}
-                    {room.userWinnerId || "Aún no hay ganador"}
-                  </p>
-                  <p className="text-sm sm:text-base">
-                    <strong>Números disponibles:</strong>{" "}
-                    {room.numbers.filter((n) => !n.userId).length}
-                  </p>
-                  <p className="text-sm sm:text-base">
-                    <strong>Números seleccionados:</strong>{" "}
-                    {room.numbers.filter((n) => n.userId).length}
-                  </p>
+                <div className="space-y-4">
+                  <InfoItem
+                    icon={<Award className="h-5 w-5" />}
+                    label="Ganador"
+                    value={
+                      room.userWinnerId !== null
+                        ? String(room.userWinnerId)
+                        : "Aún no hay ganador"
+                    }
+                  />
+                  <InfoItem
+                    icon={<Users className="h-5 w-5" />}
+                    label="Números disponibles"
+                    value={room.numbers
+                      .filter((n) => !n.userId)
+                      .length.toString()}
+                  />
+                  <InfoItem
+                    icon={<Users className="h-5 w-5" />}
+                    label="Números seleccionados"
+                    value={room.numbers
+                      .filter((n) => n.userId)
+                      .length.toString()}
+                  />
                 </div>
               </div>
               <div>
-                <h3 className="text-lg sm:text-xl font-semibold mb-4">
+                <h3 className="text-xl sm:text-2xl font-semibold mb-4 text-white">
                   Números
                 </h3>
-                <div className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-2">
+                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
                   {room.numbers
                     .sort((a, b) => a.id - b.id)
                     .map((number) => (
                       <Dialog key={number.id}>
                         <DialogTrigger asChild>
                           <button
-                            className={`p-2 text-center text-xs sm:text-sm rounded w-full ${
+                            className={`p-2 text-center text-xs sm:text-sm rounded-full w-full transition-all duration-300 ${
                               number.userId
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-secondary"
+                                ? "bg-white text-[#800020] hover:bg-gray-200"
+                                : "bg-[#800020]/30 text-white hover:bg-[#800020]/50"
                             }`}
                             onClick={() => handleNumberClick(number)}
                           >
@@ -152,11 +178,13 @@ function RoomsPage() {
                           </button>
                         </DialogTrigger>
                         {number.userId && (
-                          <DialogContent>
+                          <DialogContent className="bg-white">
                             <DialogHeader>
-                              <DialogTitle>Información del Número</DialogTitle>
+                              <DialogTitle className="text-2xl text-[#800020]">
+                                Información del Número
+                              </DialogTitle>
                             </DialogHeader>
-                            <div className="py-4">
+                            <div className="py-4 space-y-2 text-gray-700">
                               <p>
                                 <strong>Número:</strong> {number.valor}
                               </p>
@@ -171,8 +199,6 @@ function RoomsPage() {
                                 <strong>Usuario Teléfono:</strong>{" "}
                                 {number.user.telefono}
                               </p>
-
-                              {/* Add more user information here if available */}
                             </div>
                           </DialogContent>
                         )}
@@ -182,38 +208,13 @@ function RoomsPage() {
               </div>
             </>
           ) : (
-            <p className="text-center">No hay sala disponible</p>
+            <p className="text-center text-xl text-white">
+              No hay sala disponible
+            </p>
           )}
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-function RoomSkeleton() {
-  return (
-    <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        <div className="space-y-2">
-          {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-5 w-full" />
-          ))}
-        </div>
-        <div className="space-y-2">
-          {[...Array(3)].map((_, i) => (
-            <Skeleton key={i} className="h-5 w-full" />
-          ))}
-        </div>
-      </div>
-      <div>
-        <Skeleton className="h-7 w-40 mb-4" />
-        <div className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-2">
-          {[...Array(100)].map((_, i) => (
-            <Skeleton key={i} className="h-8 w-full" />
-          ))}
-        </div>
-      </div>
-    </>
   );
 }
 

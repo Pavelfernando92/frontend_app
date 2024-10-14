@@ -1,9 +1,11 @@
 import lotussApi from "@/lib/axios";
+import { AxiosError } from "axios";
 import { create } from "zustand";
 
 interface UsersState {
   users: User[];
   user: User | null;
+  error: boolean;
   getUsers: (token: string) => void;
   setUser: (id: number, token: string) => void;
 }
@@ -11,6 +13,7 @@ interface UsersState {
 const useUsersStore = create<UsersState>((set) => ({
   users: [],
   user: null,
+  error: false,
   getUsers: async (token: string) => {
     const res = await lotussApi("/usuarios", {
       headers: {
@@ -26,9 +29,15 @@ const useUsersStore = create<UsersState>((set) => ({
           Authorization: `Bearer ${token}`,
         },
       });
+
       set({ user: userActive.data });
     } catch (error) {
-      console.log(error);
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 401) {
+          console.log(error.response.data);
+          set({ error: true });
+        }
+      }
     }
   },
 }));

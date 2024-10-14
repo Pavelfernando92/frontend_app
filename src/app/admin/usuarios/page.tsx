@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import useUsersStore from "@/store/users.store";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function UsuariosPage() {
   const { data: session, status } = useSession();
@@ -18,6 +19,9 @@ export default function UsuariosPage() {
     }
   }, [status]);
 
+  const isLoading =
+    status === "loading" || (status === "authenticated" && users.length === 0);
+
   return (
     <div className="container mx-auto py-10 w-full">
       <div className="flex justify-between items-center mb-4">
@@ -26,7 +30,14 @@ export default function UsuariosPage() {
           <Button>Agregar usuario</Button>
         </Link>
       </div>
-      <DataTable columns={columns} data={users} />
+      {isLoading ? (
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-96 w-full" />
+        </div>
+      ) : (
+        <DataTable columns={columns} data={users} />
+      )}
     </div>
   );
 }
