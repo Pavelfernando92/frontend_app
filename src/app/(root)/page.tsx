@@ -100,7 +100,7 @@ const RootPage = () => {
           <Link href="/game">
             <Button
               size="lg"
-              className="bg-[#FFD700] text-[#800020] hover:bg-[#FFFFFF] hover:text-[#800020]"
+              className="bg-[#FFD700] text-[#800020] hover:bg-[#FFFFFF] hover:text-[#800020] text-xl py-8"
             >
               Jugar Ahora <Sparkles className="ml-2" />
             </Button>
