@@ -5,12 +5,53 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useUsersStore from "@/store/users.store";
 import { Coins, MessageCircle } from "lucide-react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import HistoryGames from "./_components/HistoryGames";
 import InviteFriends from "./_components/InviteFriends";
+import { useConfig } from "@/app/admin/configuration/hooks/useConfig";
+import { useSession } from "next-auth/react";
+import lotussApi from "@/lib/axios";
+import { UserGameHistoryResponse } from "../interfaces/games-history.interface";
 
 export default function PerfilPage() {
+  const { data: session } = useSession();
   const { user } = useUsersStore();
+  const { config } = useConfig();
+
+  const [loading, setLoading] = useState<boolean>(false);
+  const [games, setGames] = useState<UserGameHistoryResponse[]>([]);
+  const [winAtLeastOne, setWinAtLeastOne] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!games || games.length === 0 || !user) return;
+
+    setWinAtLeastOne(games.some((game) => game.winner.id === user.id));
+  }, [games]);
+
+  console.log(winAtLeastOne);
+
+  useEffect(() => {
+    if (!session) {
+      return;
+    }
+    const getHistoryGames = async () => {
+      try {
+        setLoading(true);
+        const res = await lotussApi(`usuarios/${session?.user.id}/history`, {
+          headers: {
+            Authorization: `Bearer ${session.user.token}`,
+          },
+        });
+        setGames(res.data);
+      } catch (error) {
+        console.log(`Error al obtener el historial de juegos: ${error}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getHistoryGames();
+  }, [session]);
 
   if (!user) {
     return null;
@@ -22,6 +63,13 @@ export default function PerfilPage() {
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
     window.open(whatsappUrl, "_blank");
   };
+
+  const canRequestWithdrawal =
+    !loading &&
+    games.length > 0 &&
+    config?.prizeAmount &&
+    winAtLeastOne &&
+    user.creditos >= config.prizeAmount;
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -50,13 +98,15 @@ export default function PerfilPage() {
                 day: "numeric",
               })}
             </p>
-            <Button
-              onClick={handleWhatsAppClick}
-              className="bg-green-500 hover:bg-green-600 text-white"
-            >
-              <MessageCircle className="mr-2 h-4 w-4" />
-              Solicitar Retiro por WhatsApp
-            </Button>
+            {canRequestWithdrawal && (
+              <Button
+                onClick={handleWhatsAppClick}
+                className="bg-green-500 hover:bg-green-600 text-white"
+              >
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Solicitar Retiro por WhatsApp
+              </Button>
+            )}
           </CardContent>
         </Card>
 

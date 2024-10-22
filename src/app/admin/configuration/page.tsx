@@ -72,7 +72,7 @@ const ConfiguracionPage: React.FC = () => {
                     }
                     min="1"
                     required
-                    disabled={!isEditing}
+                    disabled={!isEditing && configExist}
                   />
                 </div>
               </div>
@@ -99,7 +99,7 @@ const ConfiguracionPage: React.FC = () => {
                     }
                     min="1"
                     required
-                    disabled={!isEditing}
+                    disabled={!isEditing && configExist}
                   />
                 </div>
               </div>
@@ -126,7 +126,7 @@ const ConfiguracionPage: React.FC = () => {
                     }
                     min="1"
                     required
-                    disabled={!isEditing}
+                    disabled={!isEditing && configExist}
                   />
                 </div>
               </div>
@@ -134,7 +134,7 @@ const ConfiguracionPage: React.FC = () => {
 
             {/* Sección de Referidos */}
             <section>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-2">
                 <div className="space-y-2">
                   <Label htmlFor="invitationsForReward" className="text-lg">
                     Invitaciones necesarias
@@ -153,7 +153,7 @@ const ConfiguracionPage: React.FC = () => {
                     }
                     min="1"
                     required
-                    disabled={!isEditing}
+                    disabled={!isEditing && configExist}
                   />
                 </div>
                 <div className="space-y-2">
@@ -174,7 +174,7 @@ const ConfiguracionPage: React.FC = () => {
                     }
                     min="1"
                     required
-                    disabled={!isEditing}
+                    disabled={!isEditing && configExist}
                   />
                 </div>
               </div>
@@ -186,18 +186,17 @@ const ConfiguracionPage: React.FC = () => {
                 Guardar Configuración
               </Button>
             )}
+            {!isEditing && configExist && (
+              <Button
+                variant="outline"
+                onClick={toggleEditing}
+                className="w-full text-lg py-3"
+              >
+                Editar Configuración
+              </Button>
+            )}
+            {!configExist && <Button>Crear Configuración</Button>}
           </form>
-
-          {!isEditing && configExist && (
-            <Button
-              variant="outline"
-              onClick={toggleEditing}
-              className="w-full text-lg mt-4 py-3"
-            >
-              Editar Configuración
-            </Button>
-          )}
-          {!configExist && <Button>Crear Configuración</Button>}
         </CardContent>
       </Card>
     </div>
