@@ -1,10 +1,10 @@
 "use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useUsersStore from "@/store/users.store";
-import { Coins } from "lucide-react";
+import { Coins, MessageCircle } from "lucide-react";
 import React from "react";
 import HistoryGames from "./_components/HistoryGames";
 import InviteFriends from "./_components/InviteFriends";
@@ -13,8 +13,15 @@ export default function PerfilPage() {
   const { user } = useUsersStore();
 
   if (!user) {
-    return;
+    return null;
   }
+
+  const handleWhatsAppClick = () => {
+    const phoneNumber = "+525650234852";
+    const message = encodeURIComponent("Solicito un retiro");
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+    window.open(whatsappUrl, "_blank");
+  };
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -35,7 +42,7 @@ export default function PerfilPage() {
             <h2 className="text-2xl font-bold mb-2">
               {user.nombre} {user.apellido_paterno}
             </h2>
-            <p className="text-[#FFD700]">
+            <p className="text-[#FFD700] mb-4">
               Miembro desde:{" "}
               {new Date(user.createdAt).toLocaleDateString("es-ES", {
                 year: "numeric",
@@ -43,6 +50,13 @@ export default function PerfilPage() {
                 day: "numeric",
               })}
             </p>
+            <Button
+              onClick={handleWhatsAppClick}
+              className="bg-green-500 hover:bg-green-600 text-white"
+            >
+              <MessageCircle className="mr-2 h-4 w-4" />
+              Solicitar Retiro por WhatsApp
+            </Button>
           </CardContent>
         </Card>
 
