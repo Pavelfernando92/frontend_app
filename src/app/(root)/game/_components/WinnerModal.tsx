@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { ShareSocial } from "react-share-social";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { WinnerInterface } from "../../interfaces/winner.interface";
 import Confetti from "react-confetti";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Loader2 } from "lucide-react";
+import { Trophy, Loader2, Share } from "lucide-react";
 
 interface WinnerModalProps {
   winner: WinnerInterface | null;
@@ -102,6 +103,41 @@ export default function WinnerModal({
             />
           )}
         </div>
+
+        {showWinner && winner && (
+          <>
+            <div className="mt-1 flex justify-center">
+              <ShareSocial
+                url="www.lotuss.mx"
+                socialTypes={["facebook", "whatsapp", "twitter"]}
+                style={{
+                  root: {
+                    background: "transparent",
+                    padding: "0",
+                    color: "white",
+                    display: "flex",
+                    justifyContent: "center",
+                  },
+                  copyContainer: {
+                    display: "none",
+                  },
+                  title: {
+                    display: "none",
+                  },
+                  socialContainer: {
+                    justifyContent: "center",
+                  },
+                }}
+                title={`¡${winner.name} ${winner.apellido} ha ganado con el número ${winner.winningNumber}!`}
+              />
+            </div>
+            <div className="mt-2 text-center">
+              <p className="text-white text-sm font-semibold">
+                ¡Comparte en tus redes y obtén coins gratis!
+              </p>
+            </div>
+          </>
+        )}
         <div className="flex justify-center p-4">
           <Button
             onClick={onClose}

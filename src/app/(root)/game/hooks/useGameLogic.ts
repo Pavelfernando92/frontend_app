@@ -85,6 +85,7 @@ export const useGameLogic = () => {
       });
 
       socket.on("winnerSelected", (winnerData) => {
+        setUser(user!.id, session.user.token);
         setWinnerModalState({
           isOpen: true,
           winner: {
@@ -164,7 +165,8 @@ export const useGameLogic = () => {
     });
   };
 
-  const handleAssignNumberError = (msg: unknown) => { // eslint-disable-line @typescript-eslint/no-unused-vars
+  const handleAssignNumberError = (msg: unknown) => {
+    // eslint-disable-line @typescript-eslint/no-unused-vars
     setErrorModalState({
       isOpen: true,
       message: "Ocurrió un error al intentar asignar el número.",
