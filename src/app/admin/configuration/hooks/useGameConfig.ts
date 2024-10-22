@@ -112,6 +112,7 @@ const useGameConfig = () => {
         variant: "success",
       });
       setIsEditing(false);
+      setConfigExist(true);
     } catch (error) {
       toast({
         title: "¡Error!",
