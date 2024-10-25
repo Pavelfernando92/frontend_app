@@ -23,6 +23,10 @@ export const columns: ColumnDef<User>[] = [
     header: "Telefono",
   },
   {
+    accessorKey: "creditos",
+    header: "Creditos",
+  },
+  {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
