@@ -37,7 +37,7 @@ const CreditWarningModal: React.FC<CreditWarningModalProps> = ({
         </DialogDescription>
         <div className="flex w-100 justify-center mt-4">
           <a
-            href={`https://wa.me/5612175946?text=Hola,%20necesito%20más%20créditos%20para%20jugar%20mi%20correo%20es:%20${user?.email}.`}
+            href={`https://wa.me/+525650234852?text=Hola,%20necesito%20más%20créditos%20para%20jugar%20mi%20correo%20es:%20${user?.email}.`}
             target="_blank"
             rel="noopener noreferrer"
             className="w-96"

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -27,8 +27,12 @@ import Logo from "../../../../public/images/LotusLogoRed.png";
 
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import { useSearchParams } from "next/navigation";
+import { INVITATION_CODE } from "@/constants";
 
 export default function RegisterPage() {
+  const searchParams = useSearchParams();
+  const invitationCodeParams = searchParams.get(INVITATION_CODE) || "";
   const {
     formData,
     loading,
@@ -41,6 +45,15 @@ export default function RegisterPage() {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [alertInfo, setAlertInfo] = useState({ show: false, message: "" });
+
+  useEffect(() => {
+    if (invitationCodeParams) {
+      setFormData((prevData) => ({
+        ...prevData,
+        invitationCode: invitationCodeParams,
+      }));
+    }
+  }, [invitationCodeParams, setFormData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -66,6 +79,7 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     const correctBirthdate = validateBirthdate(formData.birthday);
 
     if (!correctBirthdate) {
@@ -127,7 +141,7 @@ export default function RegisterPage() {
             <AlertDescription>{alertInfo.message}</AlertDescription>
           </Alert>
         )}
-        
+
         {responseRequest.msg && (
           <Alert
             variant={responseRequest.error ? "destructive" : "default"}
@@ -238,6 +252,7 @@ export default function RegisterPage() {
               id="invitationCode"
               name="invitationCode"
               placeholder="Código de invitación..."
+              value={formData.invitationCode}
               onChange={handleChange}
               className="focus:ring-[#FF0000] text-lg lg:text-sm"
             />

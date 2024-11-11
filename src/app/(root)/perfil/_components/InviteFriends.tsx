@@ -15,53 +15,30 @@ import {
 } from "@/components/ui/card";
 
 import { useSession } from "next-auth/react";
-import lotussApi from "@/lib/axios";
 import { useConfig } from "@/app/admin/configuration/hooks/useConfig";
 import { useOrigin } from "@/hooks/use-origin";
+import useInviteLink from "../hooks/useInviteLink";
 
 export default function InviteFriends() {
   const { data: session } = useSession();
   const { config } = useConfig();
   const origin = useOrigin();
 
-  const BASE_URL = `${origin}/register`;
-
-  const [inviteLink, setInviteLink] = useState("");
+  const { inviteLink, invitationUrl } = useInviteLink(session, origin);
   const [copied, setCopied] = useState(false);
 
-  const createInvitation = async (id: number, token: string) => {
-    if (!id || !token) {
-      return;
-    }
-    try {
-      const response = await lotussApi.post(
-        "invitations",
-        {
-          userId: id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const { code } = response.data.invitation;
-      setInviteLink(code);
-    } catch (error) {
-      console.error("Error creando la invitación:", error);
-    }
+  const launchConfetti = () => {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+    });
   };
 
-  useEffect(() => {
-    if (!session) {
-      return;
-    }
-    createInvitation(session.user.id, session.user.token);
-  }, [session]);
-
-  const copyToClipboard = () => {
-    const baseUrl = `${BASE_URL}`; // Cambia esto por tu BASE URL
-    const message = `🌟 ¡Únete a Lotuss! Regístrate usando el código: ${inviteLink} 🌟\n\n🔗 ${baseUrl}`;
+  const handleCopyToClipboard = async () => {
+    const message = `
+    🌟 ¡Únete a Lotuss! Regístrate usando el código: ${inviteLink} 🌟\n\n🔗 ${invitationUrl}
+    `;
 
     if (navigator.clipboard) {
       navigator.clipboard
@@ -94,14 +71,6 @@ export default function InviteFriends() {
     document.body.removeChild(textarea);
   };
 
-  const launchConfetti = () => {
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-    });
-  };
-
   return (
     <Card className="bg-gradient-to-br from-[#800020] to-[#4a0012] text-white shadow-lg">
       <CardHeader>
@@ -125,7 +94,6 @@ export default function InviteFriends() {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="w-full"
         >
           <Input
             value={inviteLink}
@@ -139,7 +107,7 @@ export default function InviteFriends() {
           transition={{ delay: 0.4 }}
         >
           <Button
-            onClick={copyToClipboard}
+            onClick={handleCopyToClipboard}
             className="w-full bg-[#FFD700] text-[#800020] hover:bg-white hover:text-[#800020] transition-colors"
           >
             <AnimatePresence mode="wait">
@@ -179,7 +147,7 @@ export default function InviteFriends() {
             <Sparkles className="mr-2 h-5 w-5" />
             ¡Invita a {config?.invitationsForReward} amigos y obtén{" "}
             {config?.invitationReward} COINS como recompensa!
-            <Sparkles className="mr-2 h-5 w-5" />
+            <Sparkles className="ml-2 h-5 w-5" />
           </p>
         </motion.div>
       </CardContent>

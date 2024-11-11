@@ -13,6 +13,7 @@ type CreateUserType = {
   telefono: string;
   birthday: string;
   aceptaTerminos: boolean;
+  invitationCode?: string; // Added invitation code field
 };
 
 const useRegistro = () => {
@@ -27,6 +28,7 @@ const useRegistro = () => {
     telefono: "",
     birthday: "",
     aceptaTerminos: false,
+    invitationCode: "",
   });
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -35,23 +37,36 @@ const useRegistro = () => {
     msg: "",
   });
 
-  const registerUser = async (formData: CreateUserType) => {
+  // Function to validate birthdate (must be at least 18 years old)
+  const validateBirthdate = (birthday: string): boolean => {
+    const birthDate = new Date(birthday);
+    const today = new Date();
+    const age = today.getFullYear() - birthDate.getFullYear();
+
+    // Adjust for cases where birth month/day hasn't occurred yet this year
+    const isBirthdayPassed =
+      today.getMonth() > birthDate.getMonth() ||
+      (today.getMonth() === birthDate.getMonth() &&
+        today.getDate() >= birthDate.getDate());
+
+    return age > 18 || (age === 18 && isBirthdayPassed);
+  };
+
+  const registerUser = async (data: CreateUserType) => {
     setLoading(true);
-    setResponseRequest({
-      error: false,
-      msg: "",
-    });
+    setResponseRequest({ error: false, msg: "" });
 
     try {
-      const res = await lotussApi.post("/auth/register", formData);
+      const res = await lotussApi.post("/auth/register", data);
       setResponseRequest({
         error: false,
-        msg: res.data.msg, // Este mensaje puede ser de éxito o de error de invitación
+        msg: res.data.msg,
       });
 
+      // Automatically log the user in after successful registration
       const resLogin = await signIn("credentials", {
-        email: formData.email,
-        password: formData.password,
+        email: data.email,
+        password: data.password,
         redirect: false,
       });
 
@@ -73,23 +88,10 @@ const useRegistro = () => {
     }
   };
 
-  const validateBirthdate = (birthday: string): boolean => {
-    const birthDate = new Date(birthday);
-    const today = new Date();
-    const age = today.getFullYear() - birthDate.getFullYear();
-    const isBeforeBirthday =
-      today.getMonth() < birthDate.getMonth() ||
-      (today.getMonth() === birthDate.getMonth() &&
-        today.getDate() < birthDate.getDate());
-
-    return age > 18 || (age === 18 && !isBeforeBirthday);
-  };
-
   return {
     formData,
     loading,
     responseRequest,
-
     setFormData,
     validateBirthdate,
     registerUser,

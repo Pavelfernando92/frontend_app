@@ -1,122 +1,106 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import useUsersStore from "@/store/users.store";
 import { useSession } from "next-auth/react";
 import useRetiros from "./hooks/useRetiros";
-import CardInfo from "./_components/card-info";
-import CardHistory from "./_components/card-history";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
+
+type Withdrawal = {
+  id: string;
+  userId: string;
+  quantity: number;
+  createdAt: string;
+  user: {
+    nombre: string;
+    apellido_paterno: string;
+    apellido_materno: string;
+  };
+};
 
 export default function WithdrawalPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [foundUser, setFoundUser] = useState<User | null>(null);
-  const [withdrawalAmount, setWithdrawalAmount] = useState("");
-  const [withdrawalHistory, setWithdrawalHistory] = useState<
-    RetirosInterface[]
-  >([]);
+  const [withdrawals, setWithdrawals] = useState<RetirosInterface[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSearching, setIsSearching] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<string>("");
+  const [withdrawalAmount, setWithdrawalAmount] = useState("");
+  const [creditsUser, setCreditsUser] = useState<number>(0); // Update 1
   const { toast } = useToast();
-
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const { getUsers, users } = useUsersStore();
   const { createRetiro, getRetiros } = useRetiros();
 
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.token) {
+    if (session?.user?.token) {
       getUsers(session.user.token);
-      setIsLoading(false);
-    } else if (status !== "loading") {
-      setIsLoading(false);
+      fetchWithdrawals();
     }
-  }, [status, session, getUsers]);
+  }, [session]);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSearching(true);
-    const normalizePhoneNumber = (phone: string) => {
-      return phone.replace(/^\+?52?/, "").slice(-10);
-    };
-
-    const user: User | undefined = users.find(
-      (u) =>
-        u.email === searchTerm ||
-        normalizePhoneNumber(u.telefono) === normalizePhoneNumber(searchTerm)
-    );
-    if (user) {
-      setFoundUser(user);
+  const fetchWithdrawals = async () => {
+    try {
+      const allWithdrawals = await getRetiros();
+      setWithdrawals(allWithdrawals);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error fetching withdrawals:", error);
       toast({
-        title: "Usuario encontrado",
-        description: `Se ha encontrado a ${user.nombre} ${user.apellido_paterno} ${user.apellido_materno}`,
-      });
-
-      try {
-        const history = await getRetiros(user.id);
-        setWithdrawalHistory(history);
-      } catch (error) {
-        console.error("Error fetching withdrawal history:", error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "No se pudo obtener el historial de retiros",
-        });
-      }
-    } else {
-      setFoundUser(null);
-      setWithdrawalHistory([]);
-      toast({
-        title: "Usuario no encontrado",
-        description: "No se ha encontrado ningún usuario con esos datos",
         variant: "destructive",
+        title: "Error",
+        description: "No se pudo obtener el historial de retiros",
       });
+      setIsLoading(false);
     }
-    setIsSearching(false);
   };
 
   const handleWithdrawal = async (e: React.FormEvent) => {
     e.preventDefault();
     const amount = parseFloat(withdrawalAmount);
-    if (!foundUser) {
-      return;
-    }
-    if (isNaN(amount) || amount <= 0 || amount > foundUser.creditos) {
+    if (isNaN(amount) || amount <= 0 || amount > creditsUser) {
+      // Update 2
       toast({
         title: "Error en el retiro",
-        description: "El monto de retiro no es válido",
+        description:
+          amount > creditsUser
+            ? "El monto de retiro excede los créditos disponibles"
+            : "El monto de retiro no es válido",
         variant: "destructive",
       });
       return;
     }
     const payload = {
       quantity: amount,
-      userId: foundUser.id,
+      userId: Number(selectedUser),
     };
     try {
       await createRetiro(payload);
       toast({
         variant: "success",
         title: "Retiro exitoso",
-        description: `Se ha retirado $${amount} de la cuenta de ${foundUser.nombre}`,
+        description: `Se ha retirado $${amount} de la cuenta del usuario`,
       });
-      setFoundUser({ ...foundUser, creditos: foundUser.creditos - amount });
       setWithdrawalAmount("");
+      setSelectedUser("");
+      fetchWithdrawals();
+      setCreditsUser(creditsUser - amount);
       getUsers(session!.user.token);
-
-      const updatedHistory = await getRetiros(foundUser.id);
-      setWithdrawalHistory(updatedHistory);
     } catch (error) {
       console.log(error);
       toast({
@@ -127,112 +111,104 @@ export default function WithdrawalPage() {
     }
   };
 
-  const handleChangeWithDrawalAmount = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setWithdrawalAmount(e.target.value);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="container mx-auto px-4 lg:px-8 xl:px-16">
-        <Skeleton className="h-8 w-64 mb-4 lg:mb-6" />
-        <Card className="w-full max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto">
-          <CardHeader>
-            <Skeleton className="h-6 w-48 mb-2" />
-            <Skeleton className="h-4 w-64" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-32" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
+  useEffect(() => {
+    if (!selectedUser || users.length === 0) return;
+    const userInfo = users.find((user) => user.id === Number(selectedUser));
+    if (!userInfo) return;
+    setCreditsUser(userInfo.creditos);
+  }, [selectedUser, users]);
   return (
-    <div className="container mx-auto px-4 lg:px-8 xl:px-16">
-      <h1 className="text-2xl lg:text-3xl font-bold mb-4 lg:mb-6">
-        Página de Retiros
-      </h1>
-
-      <Card className="w-full max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto">
-        <CardHeader>
-          <CardTitle className="text-lg lg:text-2xl">Buscar Usuario</CardTitle>
-          <CardDescription className="text-base lg:text-lg">
-            Ingrese el número de teléfono o email del usuario
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSearch} className="space-y-4">
-            <div>
-              <Label htmlFor="searchTerm" className="text-sm lg:text-base">
-                Teléfono o Email
-              </Label>
-              <Input
-                id="searchTerm"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value.trim())}
-                placeholder="Ingrese teléfono o email"
-                className="w-full text-sm lg:text-base"
-              />
-            </div>
-            <Button
-              type="submit"
-              className="w-full sm:w-auto lg:text-lg"
-              disabled={isSearching}
-            >
-              {isSearching ? "Buscando..." : "Buscar"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      {isSearching ? (
-        <Card className="w-full max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto mt-8 lg:mt-12">
-          <CardHeader>
-            <Skeleton className="h-6 w-48 mb-2" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-10 w-full mb-4" />
-            <Skeleton className="h-32 w-full" />
-          </CardContent>
-        </Card>
-      ) : foundUser ? (
-        <Card className="w-full max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto mt-8 lg:mt-12">
-          <CardHeader>
-            <CardTitle className="text-lg lg:text-2xl">
-              Información del Usuario
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="form" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="form" className="md:text-xl">
-                  Realizar Retiro
-                </TabsTrigger>
-                <TabsTrigger value="history" className="md:text-xl">
-                  Historial de Retiros
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="form" className="mt-6">
-                <CardInfo
-                  user={foundUser}
-                  handleWithdrawal={handleWithdrawal}
-                  withdrawalAmount={withdrawalAmount}
-                  handleChangeWithDrawalAmount={handleChangeWithDrawalAmount}
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Historial de Retiros</h1>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>Realizar Retiro</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Realizar un nuevo retiro</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleWithdrawal} className="space-y-4">
+              <div>
+                <Label htmlFor="user">Usuario</Label>
+                <select
+                  id="user"
+                  value={selectedUser}
+                  onChange={(e) => setSelectedUser(e.target.value)}
+                  className="w-full p-2 border rounded"
+                  required
+                >
+                  <option value="">Seleccione un usuario</option>
+                  {users.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {`${user.nombre} ${user.apellido_paterno} ${user.apellido_materno}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {selectedUser && ( // Update 3
+                <div>
+                  <Label>Créditos disponibles</Label>
+                  <p className="text-sm text-muted-foreground">
+                    ${creditsUser.toFixed(2)}
+                  </p>
+                </div>
+              )}
+              <div>
+                <Label htmlFor="amount">Monto</Label>
+                <Input
+                  id="amount"
+                  type="number"
+                  value={withdrawalAmount}
+                  onChange={(e) => setWithdrawalAmount(e.target.value)}
+                  placeholder="Ingrese el monto"
+                  required
                 />
-              </TabsContent>
-              <TabsContent value="history" className="mt-6">
-                <CardHistory withdrawalHistory={withdrawalHistory} />
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      ) : null}
+              </div>
+              <Button
+                type="submit"
+                disabled={
+                  !selectedUser ||
+                  creditsUser <= 0 ||
+                  parseFloat(withdrawalAmount) > creditsUser
+                } // Update 3
+              >
+                Confirmar Retiro
+              </Button>
+              {selectedUser &&
+                creditsUser <= 0 && ( // Update 3
+                  <p className="text-sm text-red-500">
+                    El usuario no tiene créditos suficientes para realizar un
+                    retiro.
+                  </p>
+                )}
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>ID</TableHead>
+            <TableHead>Usuario</TableHead>
+            <TableHead>Cantidad</TableHead>
+            <TableHead>Fecha</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {withdrawals.map((withdrawal) => (
+            <TableRow key={withdrawal.id}>
+              <TableCell>{withdrawal.id}</TableCell>
+              <TableCell>{`${withdrawal.user.nombre} ${withdrawal.user.apellido_paterno} ${withdrawal.user.apellido_materno}`}</TableCell>
+              <TableCell>${withdrawal.quantity.toFixed(2)}</TableCell>
+              <TableCell>
+                {new Date(withdrawal.createdAt).toLocaleString()}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }
