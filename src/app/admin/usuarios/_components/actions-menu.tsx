@@ -68,9 +68,9 @@ const ActionsMenu = ({ toast, user, router }: Props) => {
     setLoading(true);
     try {
       await lotussApi.put(
-        `/usuarios/${user.id}`,
+        `/usuarios//credits/${user.id}`,
         {
-          creditos: totalCoins,
+          quantity: totalCoins,
         },
         {
           headers: {

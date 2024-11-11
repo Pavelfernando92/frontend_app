@@ -13,7 +13,7 @@ const useRetiros = () => {
     return res.data;
   };
 
-  const getRetiros = async (_: number): Promise<RetirosInterface[]> => { // eslint-disable-line @typescript-eslint/no-unused-vars
+  const getRetiros = async (): Promise<RetirosInterface[]> => { // eslint-disable-line @typescript-eslint/no-unused-vars
     const res = await lotussApi("withdrawals", {
       headers: {
         Authorization: `Bearer ${session?.user.token}`,
