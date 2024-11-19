@@ -67,8 +67,8 @@ const ActionsMenu = ({ toast, user, router }: Props) => {
     }
     setLoading(true);
     try {
-      await lotussApi.put(
-        `/usuarios//credits/${user.id}`,
+      await lotussApi.patch(
+        `/usuarios/credits/${user.id}`,
         {
           quantity: totalCoins,
         },
