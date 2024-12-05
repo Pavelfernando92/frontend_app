@@ -16,6 +16,8 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import useUsersStore from "@/store/users.store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserRoleEnum } from "@/enums/user.enums";
+import { navigationLinks } from "../_data/nav";
 
 const Nav = () => {
   const { data: session } = useSession();
@@ -69,28 +71,21 @@ const Nav = () => {
                   </div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem asChild>
-                    <Link href="/" className="cursor-pointer">
-                      Inicio
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/game" className="cursor-pointer">
-                      Jugar
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/perfil" className="cursor-pointer">
-                      Ver Perfil
-                    </Link>
-                  </DropdownMenuItem>
-                  {session && session.user.role === "ADMIN" && (
-                    <DropdownMenuItem asChild>
-                      <Link href="/admin" className="cursor-pointer">
-                        Ir al Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                  )}
+                  {navigationLinks.map((link) => {
+                    // Filtra los enlaces por el rol del usuario
+                    if (
+                      link.roles.includes(session?.user.role as UserRoleEnum)
+                    ) {
+                      return (
+                        <DropdownMenuItem key={link.path} asChild>
+                          <Link href={link.path} className="cursor-pointer">
+                            {link.name}
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    }
+                    return null;
+                  })}
                   <DropdownMenuItem asChild>
                     <Button
                       variant="destructive"
@@ -127,36 +122,24 @@ const Nav = () => {
               </SheetTrigger>
               <SheetContent side="right" className="w-[250px] sm:w-[300px]">
                 <nav className="flex flex-col space-y-4">
-                  <Link
-                    href="/"
-                    className="block py-2 px-4 text-sm hover:bg-gray-100 rounded-md"
-                    onClick={closeSheet}
-                  >
-                    Inicio
-                  </Link>
-                  <Link
-                    href="/game"
-                    className="block py-2 px-4 text-sm hover:bg-gray-100 rounded-md"
-                    onClick={closeSheet}
-                  >
-                    Jugar
-                  </Link>
-                  <Link
-                    href="/perfil"
-                    className="block py-2 px-4 text-sm hover:bg-gray-100 rounded-md"
-                    onClick={closeSheet}
-                  >
-                    Ver Perfil
-                  </Link>
-                  {session && session.user.role === "ADMIN" && (
-                    <Link
-                      href="/admin"
-                      className="block py-2 px-4 text-sm hover:bg-gray-100 rounded-md"
-                      onClick={closeSheet}
-                    >
-                      Dashboard
-                    </Link>
-                  )}
+                  {navigationLinks.map((link) => {
+                    // Filtrar enlaces por el rol del usuario
+                    if (
+                      link.roles.includes(session?.user.role as UserRoleEnum)
+                    ) {
+                      return (
+                        <Link
+                          key={link.path}
+                          href={link.path}
+                          className="block py-2 px-4 text-sm hover:bg-gray-100 rounded-md"
+                          onClick={closeSheet}
+                        >
+                          {link.name}
+                        </Link>
+                      );
+                    }
+                    return null;
+                  })}
                   <Button
                     variant="destructive"
                     className="w-full justify-start"

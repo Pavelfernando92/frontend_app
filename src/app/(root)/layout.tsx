@@ -15,6 +15,7 @@ const LayoutRoot = ({ children }: Props) => {
   const { user, setUser } = useUsersStore();
   const { error } = useUsersStore();
 
+
   useEffect(() => {
     const updateUser = async () => {
       if (session && status === "authenticated" && !user) {

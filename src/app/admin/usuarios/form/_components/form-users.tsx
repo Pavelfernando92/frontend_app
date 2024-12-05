@@ -21,6 +21,8 @@ import "react-phone-input-2/lib/style.css"; // Importa los estilos por defecto d
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
 
+const UserRoles = ["USER", "AMBASSADOR", "ADMIN"] as const;
+
 const phoneRegex = new RegExp(
   /^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/ // Asegúrate de que el regex sea compatible
 );
@@ -62,6 +64,7 @@ export const formSchema = z.object({
   telefono: z.string().regex(phoneRegex, {
     message: "Por favor ingrese un número de teléfono válido.",
   }),
+  role: z.enum(UserRoles).optional().default("USER"),
 });
 
 interface FormUsersProps {
@@ -81,6 +84,7 @@ const FormUsers: React.FC<FormUsersProps> = ({ defaultValues, onSubmit }) => {
       apellido_materno: "",
       birthday: "",
       telefono: "",
+      role: UserRoles[0],
     },
   });
   const { toast } = useToast();
@@ -213,6 +217,23 @@ const FormUsers: React.FC<FormUsersProps> = ({ defaultValues, onSubmit }) => {
                 />
               </FormControl>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="role"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Rol de Usuario</FormLabel>
+              <FormControl>
+                <select {...field} className="w-full p-2 border rounded-md">
+                  <option value="">Selecciona una opción</option>
+                  <option value={UserRoles[0]}>Usuario</option>
+                  <option value={UserRoles[1]}>Embajador</option>
+                  <option value={UserRoles[2]}>Administrador</option>
+                </select>
+              </FormControl>
             </FormItem>
           )}
         />

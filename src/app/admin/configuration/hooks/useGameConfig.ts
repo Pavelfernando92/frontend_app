@@ -13,6 +13,8 @@ const useGameConfig = () => {
     numerosTotales: "",
     invitationsForReward: "",
     invitationReward: "",
+    creditsPerMonth: "",
+    rewardGoalCredits: "",
   });
   const [isEditing, setIsEditing] = useState(false);
   const [configExist, setConfigExist] = useState(false);
@@ -44,6 +46,8 @@ const useGameConfig = () => {
         numerosTotales: data.totalOfNumbers,
         invitationsForReward: data.invitationsForReward,
         invitationReward: data.invitationReward,
+        creditsPerMonth: data.creditsPerMonth,
+        rewardGoalCredits: data.rewardGoalCredits,
       });
       setConfigExist(true);
       setIdConfig(data.id);
@@ -67,6 +71,8 @@ const useGameConfig = () => {
       numerosTotales,
       invitationsForReward,
       invitationReward,
+      creditsPerMonth,
+      rewardGoalCredits,
     } = config;
 
     if (
@@ -76,6 +82,8 @@ const useGameConfig = () => {
         numerosTotales,
         invitationsForReward,
         invitationReward,
+        creditsPerMonth,
+        rewardGoalCredits,
       ].some((value) => Number(value) <= 0)
     ) {
       toast({
@@ -100,6 +108,8 @@ const useGameConfig = () => {
           totalOfNumbers: Number(numerosTotales),
           invitationsForReward: Number(invitationsForReward),
           invitationReward: Number(invitationReward),
+          creditsPerMonth: Number(creditsPerMonth),
+          rewardGoalCredits: Number(rewardGoalCredits),
         },
         {
           headers: { Authorization: `Bearer ${session!.user.token}` },

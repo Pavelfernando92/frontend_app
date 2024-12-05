@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Copy, Check, Users, Sparkles } from "lucide-react";
 import confetti from "canvas-confetti";
@@ -24,9 +23,6 @@ export default function InviteFriends() {
   const { config } = useConfig();
   const origin = useOrigin();
 
-  const { inviteLink, invitationUrl } = useInviteLink(session, origin);
-  const [copied, setCopied] = useState(false);
-
   const launchConfetti = () => {
     confetti({
       particleCount: 100,
@@ -35,41 +31,11 @@ export default function InviteFriends() {
     });
   };
 
-  const handleCopyToClipboard = async () => {
-    const message = `
-    🌟 ¡Únete a Lotuss! Regístrate usando el código: ${inviteLink} 🌟\n\n🔗 ${invitationUrl}
-    `;
-
-    if (navigator.clipboard) {
-      navigator.clipboard
-        .writeText(message)
-        .then(() => {
-          setCopied(true);
-          launchConfetti();
-          setTimeout(() => setCopied(false), 2000);
-        })
-        .catch((err) => console.error("Failed to copy: ", err));
-    } else {
-      // Fallback for unsupported browsers
-      fallbackCopyToClipboard(message);
-    }
-  };
-
-  const fallbackCopyToClipboard = (text: string) => {
-    const textarea = document.createElement("textarea");
-    textarea.value = text;
-    document.body.appendChild(textarea);
-    textarea.select();
-    try {
-      document.execCommand("copy");
-      setCopied(true);
-      launchConfetti();
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Fallback: Unable to copy text", err);
-    }
-    document.body.removeChild(textarea);
-  };
+  const { inviteLink, handleCopyToClipboard, copied } = useInviteLink(
+    session,
+    origin,
+    launchConfetti
+  );
 
   return (
     <Card className="bg-gradient-to-br from-[#800020] to-[#4a0012] text-white shadow-lg">
