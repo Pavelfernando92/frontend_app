@@ -1,10 +1,19 @@
 "use client";
 import { useState, useEffect } from "react";
 import { signOut, useSession } from "next-auth/react";
-
 import Sidebar from "./_components/Sidebar";
 import Navbar from "./_components/Navbar";
-import useUsersStore from "@/store/users.store";
+import { UserRoleEnum } from "@/enums/user.enums";
+import {
+  Bolt,
+  BookMarked,
+  Gamepad,
+  LayoutDashboard,
+  LogOut,
+  Users,
+  Wallet,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface Props {
   children: React.ReactNode;
@@ -13,45 +22,74 @@ interface Props {
 export default function AdminLayout({ children }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { data: session } = useSession();
-  const { setUser, error } = useUsersStore();
+  const router = useRouter();
+
+  const adminMenuItems = [
+    {
+      label: "Dashboard",
+      icon: <LayoutDashboard className="mr-2 h-4 w-4" />,
+      path: "/admin",
+    },
+    {
+      label: "Usuarios",
+      icon: <Users className="mr-2 h-4 w-4" />,
+      path: "/admin/usuarios",
+    },
+    {
+      label: "Historial de Juegos",
+      icon: <BookMarked className="mr-2 h-4 w-4" />,
+      path: "/admin/historic-games",
+    },
+    {
+      label: "Juegos en Vivo",
+      icon: <Gamepad className="mr-2 h-4 w-4" />,
+      path: "/admin/rooms",
+    },
+    {
+      label: "Retiros",
+      icon: <Wallet className="mr-2 h-4 w-4" />,
+      path: "/admin/retiros",
+    },
+    {
+      label: "Configuración",
+      icon: <Bolt className="mr-2 h-4 w-4" />,
+      path: "/admin/configuration",
+    },
+  ];
+
   useEffect(() => {
     if (session) {
       const expiresAt = new Date(session.expires).getTime();
       const currentTime = Date.now();
 
-      // If the session is already expired, log out immediately
+      // Si la sesión ha expirado, cerrar sesión inmediatamente
       if (currentTime >= expiresAt) {
         signOut();
-      } else {
-        setUser(session.user.id, session.user.token);
       }
     }
   }, [session]);
 
-  useEffect(() => {
-    if (error) {
-      signOut();
-    }
-  }, [error]);
-
-  return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <Navbar
+  if (session && session.user.role === UserRoleEnum.ADMIN) {
+    return (
+      <div className="flex h-screen bg-gray-100">
+        <Sidebar
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
-          session={session}
+          menuItems={adminMenuItems}
         />
-
-        {/* Main Content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
-          {children}
-        </main>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Navbar
+            sidebarOpen={sidebarOpen}
+            setSidebarOpen={setSidebarOpen}
+            session={session}
+          />
+          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  return router.push("/"); // Si no es Admin
 }

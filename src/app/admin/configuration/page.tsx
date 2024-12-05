@@ -14,6 +14,8 @@ const ConfiguracionPage: React.FC = () => {
     numerosTotales,
     invitationsForReward,
     invitationReward,
+    creditsPerMonth,
+    rewardGoalCredits,
     manejarEnvio,
     isEditing,
     toggleEditing,
@@ -173,6 +175,52 @@ const ConfiguracionPage: React.FC = () => {
                       handleInputChange("invitationReward", e.target.value)
                     }
                     min="1"
+                    required
+                    disabled={!isEditing && configExist}
+                  />
+                </div>
+              </div>
+            </section>
+
+            {/* Sección de Créditos por Mes */}
+            <section>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-2">
+                <div className="space-y-2">
+                  <Label htmlFor="creditsPerMonth" className="text-lg">
+                    Créditos por Mes
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Define la cantidad de créditos que los embajadores necesitan
+                    en su grupo para ganar recompensa.
+                  </p>
+                  <Input
+                    id="creditsPerMonth"
+                    type="number"
+                    className="sm:text-lg p-2"
+                    value={creditsPerMonth}
+                    onChange={(e) =>
+                      handleInputChange("creditsPerMonth", e.target.value)
+                    }
+                    min="1"
+                    required
+                    disabled={!isEditing && configExist}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="rewardGoalCredits" className="text-lg">
+                    Meta de Créditos para Recompensa
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Recompensa de Créditos para el Embajador.
+                  </p>
+                  <Input
+                    id="rewardGoalCredits"
+                    type="text"
+                    className="sm:text-lg p-2"
+                    value={rewardGoalCredits}
+                    onChange={(e) =>
+                      handleInputChange("rewardGoalCredits", e.target.value)
+                    }
                     required
                     disabled={!isEditing && configExist}
                   />
