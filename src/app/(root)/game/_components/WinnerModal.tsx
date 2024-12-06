@@ -108,7 +108,7 @@ export default function WinnerModal({
           <>
             <div className="mt-1 flex justify-center">
               <ShareSocial
-                url="www.lotuss.mx"
+                url="https://lotuss.mx"
                 socialTypes={["facebook", "whatsapp", "twitter"]}
                 style={{
                   root: {
@@ -128,7 +128,6 @@ export default function WinnerModal({
                     justifyContent: "center",
                   },
                 }}
-                title={`¡${winner.name} ${winner.apellido} ha ganado con el número ${winner.winningNumber}!`}
               />
             </div>
             <div className="mt-2 text-center">

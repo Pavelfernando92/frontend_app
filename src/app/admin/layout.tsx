@@ -7,6 +7,7 @@ import { UserRoleEnum } from "@/enums/user.enums";
 import {
   Bolt,
   BookMarked,
+  Component,
   Gamepad,
   LayoutDashboard,
   LogOut,
@@ -34,6 +35,11 @@ export default function AdminLayout({ children }: Props) {
       label: "Usuarios",
       icon: <Users className="mr-2 h-4 w-4" />,
       path: "/admin/usuarios",
+    },
+    {
+      label: "Embajadores",
+      icon: <Component className="mr-2 h-4 w-4" />,
+      path: "/admin/embajadores",
     },
     {
       label: "Historial de Juegos",
