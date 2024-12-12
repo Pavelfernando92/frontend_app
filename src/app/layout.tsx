@@ -16,8 +16,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Lotuss",
-  description: "Lotuss - Web",
+  title: "Lotuss México",
+  description: "¡Lotuss - Juega y Gana increibles premios!",
 };
 
 export default function RootLayout({
@@ -27,26 +27,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <head>
-        {/* Meta tag para controlar el zoom en dispositivos móviles */}
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, maximum-scale=1"
-        />
-
-        {/* Meta Tags para Twitter */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="¡Ven a jugar y ganar!" />
-        <meta name="twitter:description" content="Únete a nuestro emocionante juego y gana increíbles premios." />
-        <meta name="twitter:image" content="/images/LotusLogo.png" />
-
-        {/* Meta Tags para Facebook */}
-        <meta property="og:title" content="¡Ven a jugar y ganar!" />
-        <meta property="og:description" content="Únete a nuestro emocionante juego y gana increíbles premios." />
-        <meta property="og:image" content="/images/LotusLogo.png" />
-        <meta property="og:url" content="https://lotuss.mx" />
-        <meta property="og:type" content="website" />
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

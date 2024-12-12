@@ -13,6 +13,8 @@ import { WinnerInterface } from "../../interfaces/winner.interface";
 import Confetti from "react-confetti";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Loader2, Share } from "lucide-react";
+import { useOrigin } from "@/hooks/use-origin";
+import useUsersStore from "@/store/users.store";
 
 interface WinnerModalProps {
   winner: WinnerInterface | null;
@@ -25,9 +27,12 @@ export default function WinnerModal({
   isOpen,
   onClose,
 }: WinnerModalProps) {
+  const origin = useOrigin();
   const [showRoulette, setShowRoulette] = useState(true);
   const [showWinner, setShowWinner] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+
+  const { user } = useUsersStore();
 
   useEffect(() => {
     if (isOpen) {
@@ -104,11 +109,11 @@ export default function WinnerModal({
           )}
         </div>
 
-        {showWinner && winner && (
+        {showWinner && winner && user && user.id === winner.id && (
           <>
             <div className="mt-1 flex justify-center">
               <ShareSocial
-                url="https://lotuss.mx"
+                url={`${origin}/game`}
                 socialTypes={["facebook", "whatsapp", "twitter"]}
                 style={{
                   root: {
