@@ -17,7 +17,27 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "Lotuss México",
-  description: "¡Lotuss - Juega y Gana increibles premios!",
+  description: "¡Lotuss - Juega y Gana increíbles premios!",
+  openGraph: {
+    title: "Lotuss México",
+    description: "¡Lotuss - Juega y Gana increíbles premios!",
+    url: "https://lotuss.mx/",
+    type: "website",
+    images: [
+      {
+        url: "/images/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Lotuss México - ScratchRoom",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Lotuss México",
+    description: "¡Lotuss - Juega y Gana increíbles premios!",
+    images: ["/images/opengraph-image.png"],
+  },
 };
 
 export default function RootLayout({
