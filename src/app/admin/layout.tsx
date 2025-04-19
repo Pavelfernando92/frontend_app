@@ -10,7 +10,7 @@ import {
   Component,
   Gamepad,
   LayoutDashboard,
-  LogOut,
+  TicketPercent,
   Users,
   Wallet,
 } from "lucide-react";
@@ -24,44 +24,20 @@ export default function AdminLayout({ children }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { data: session } = useSession();
   const router = useRouter();
-
+  
   const adminMenuItems = [
-    {
-      label: "Dashboard",
-      icon: <LayoutDashboard className="mr-2 h-4 w-4" />,
-      path: "/admin",
-    },
-    {
-      label: "Usuarios",
-      icon: <Users className="mr-2 h-4 w-4" />,
-      path: "/admin/usuarios",
-    },
-    {
-      label: "Embajadores",
-      icon: <Component className="mr-2 h-4 w-4" />,
-      path: "/admin/embajadores",
-    },
-    {
-      label: "Historial de Juegos",
-      icon: <BookMarked className="mr-2 h-4 w-4" />,
-      path: "/admin/historic-games",
-    },
-    {
-      label: "Juegos en Vivo",
-      icon: <Gamepad className="mr-2 h-4 w-4" />,
-      path: "/admin/rooms",
-    },
-    {
-      label: "Retiros",
-      icon: <Wallet className="mr-2 h-4 w-4" />,
-      path: "/admin/retiros",
-    },
-    {
-      label: "Configuración",
-      icon: <Bolt className="mr-2 h-4 w-4" />,
-      path: "/admin/configuration",
-    },
-  ];
+    { label: "Dashboard", icon: LayoutDashboard, path: "/admin" },
+    { label: "Usuarios", icon: Users, path: "/admin/usuarios" },
+    { label: "Embajadores", icon: Component, path: "/admin/embajadores" },
+    { label: "Historial de Juegos", icon: BookMarked, path: "/admin/historic-games" },
+    { label: "Juegos en Vivo", icon: Gamepad, path: "/admin/rooms" },
+    { label: "Retiros", icon: Wallet, path: "/admin/retiros" },
+    { label: "Promociones", icon: TicketPercent, path: "/admin/promociones" },
+    { label: "Configuración", icon: Bolt, path: "/admin/configuration" },
+  ].map((item) => ({
+    ...item,
+    icon: <item.icon className="mr-2 h-4 w-4" />,
+  }));
 
   useEffect(() => {
     if (session) {
