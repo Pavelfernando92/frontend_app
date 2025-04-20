@@ -118,203 +118,207 @@ export default function RegisterPage() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto sm:max-w-lg lg:max-w-xl sm:p-6 lg:p-2">
-      <CardHeader>
-        <div className="flex justify-center mb-4">
-          <Image
-            src={Logo}
-            alt="Lotus Logo"
-            width={250}
-            height={200}
-            priority
-          />
-        </div>
-        <CardTitle className="text-2xl font-bold text-center text-[#800020] sm:text-3xl lg:text-4xl">
-          Registrarse
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {alertInfo.show && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{alertInfo.message}</AlertDescription>
-          </Alert>
-        )}
-
-        {responseRequest.msg && (
-          <Alert
-            variant={responseRequest.error ? "destructive" : "default"}
-            className={cn("mb-4", !responseRequest.error && "bg-green-300")}
-          >
-            {responseRequest.error && <AlertCircle className="h-4 w-4" />}
-            <AlertTitle>{responseRequest.error ? "Error" : "Éxito"}</AlertTitle>
-            <AlertDescription>{responseRequest.msg}</AlertDescription>
-          </Alert>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="email">Correo electrónico</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="john@example.com"
-                required
-                onChange={handleChange}
-                className="focus:ring-[#FF0000] text-lg lg:text-sm"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Contraseña</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="**********"
-                required
-                autoComplete="on"
-                onChange={handleChange}
-                className="focus:ring-[#FF0000] text-lg lg:text-sm"
-              />
-            </div>
+    <div className="flex justify-center items-center min-h-screen p-4">
+      <Card className="w-full max-w-md mx-auto sm:max-w-lg lg:max-w-xl sm:p-6 lg:p-2">
+        <CardHeader>
+          <div className="flex justify-center mb-4">
+            <Image
+              src={Logo}
+              alt="Lotus Logo"
+              width={250}
+              height={200}
+              priority
+            />
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="nombre">Nombre</Label>
-              <Input
-                id="nombre"
-                name="nombre"
-                placeholder="Tu nombre..."
-                required
-                onChange={handleChange}
-                className="focus:ring-[#FF0000] text-lg lg:text-sm"
-              />
+          <CardTitle className="text-2xl font-bold text-center text-[#800020] sm:text-3xl lg:text-4xl">
+            Registrarse
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {alertInfo.show && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{alertInfo.message}</AlertDescription>
+            </Alert>
+          )}
+
+          {responseRequest.msg && (
+            <Alert
+              variant={responseRequest.error ? "destructive" : "default"}
+              className={cn("mb-4", !responseRequest.error && "bg-green-300")}
+            >
+              {responseRequest.error && <AlertCircle className="h-4 w-4" />}
+              <AlertTitle>
+                {responseRequest.error ? "Error" : "Éxito"}
+              </AlertTitle>
+              <AlertDescription>{responseRequest.msg}</AlertDescription>
+            </Alert>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="email">Correo electrónico</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="john@example.com"
+                  required
+                  onChange={handleChange}
+                  className="focus:ring-[#FF0000] text-lg lg:text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Contraseña</Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder="**********"
+                  required
+                  autoComplete="on"
+                  onChange={handleChange}
+                  className="focus:ring-[#FF0000] text-lg lg:text-sm"
+                />
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="nombre">Nombre</Label>
+                <Input
+                  id="nombre"
+                  name="nombre"
+                  placeholder="Tu nombre..."
+                  required
+                  onChange={handleChange}
+                  className="focus:ring-[#FF0000] text-lg lg:text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="apellido_paterno">Apellido Paterno</Label>
+                <Input
+                  id="apellido_paterno"
+                  name="apellido_paterno"
+                  placeholder="Tu apellido paterno..."
+                  required
+                  onChange={handleChange}
+                  className="focus:ring-[#FF0000] text-lg lg:text-base"
+                />
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="apellido_materno">Apellido Materno</Label>
+                <Input
+                  id="apellido_materno"
+                  name="apellido_materno"
+                  required
+                  placeholder="Tu apellido materno..."
+                  onChange={handleChange}
+                  className="focus:ring-[#FF0000] text-lg lg:text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="telefono">Número de Teléfono</Label>
+                <PhoneInput
+                  country={"mx"}
+                  value={formData.telefono}
+                  onChange={handlePhoneChange}
+                  inputProps={{
+                    name: "telefono",
+                    required: true,
+                    autoFocus: false,
+                  }}
+                  containerStyle={{ width: "100%" }}
+                  inputStyle={{ width: "100%" }}
+                />
+              </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="apellido_paterno">Apellido Paterno</Label>
+              <Label htmlFor="birthday">Fecha de Nacimiento</Label>
               <Input
-                id="apellido_paterno"
-                name="apellido_paterno"
-                placeholder="Tu apellido paterno..."
+                id="birthday"
+                name="birthday"
+                type="date"
                 required
                 onChange={handleChange}
                 className="focus:ring-[#FF0000] text-lg lg:text-base"
               />
             </div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="apellido_materno">Apellido Materno</Label>
+              <Label htmlFor="invitationCode">
+                Código de Invitación (opcional)
+              </Label>
               <Input
-                id="apellido_materno"
-                name="apellido_materno"
-                required
-                placeholder="Tu apellido materno..."
+                id="invitationCode"
+                name="invitationCode"
+                placeholder="Código de invitación..."
+                value={formData.invitationCode}
                 onChange={handleChange}
                 className="focus:ring-[#FF0000] text-lg lg:text-sm"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="telefono">Número de Teléfono</Label>
-              <PhoneInput
-                country={"mx"}
-                value={formData.telefono}
-                onChange={handlePhoneChange}
-                inputProps={{
-                  name: "telefono",
-                  required: true,
-                  autoFocus: false,
-                }}
-                containerStyle={{ width: "100%" }}
-                inputStyle={{ width: "100%" }}
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="aceptaTerminos"
+                checked={formData.aceptaTerminos}
+                onCheckedChange={handleCheckboxChange}
               />
+              <Label htmlFor="aceptaTerminos" className="text-sm">
+                Acepto los{" "}
+                <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+                  <DialogTrigger asChild>
+                    <span
+                      className="text-[#d30000] hover:underline cursor-pointer"
+                      onClick={openModal}
+                    >
+                      términos y condiciones
+                    </span>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-[90%] w-[800px] max-h-[80vh]">
+                    <DialogHeader>
+                      <DialogTitle>Términos y Condiciones</DialogTitle>
+                      <DialogDescription>
+                        Por favor, lea atentamente los siguientes términos y
+                        condiciones.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <ScrollArea className="h-[60vh] mt-4">
+                      <div className="text-sm">
+                        <h2 className="text-lg font-bold mb-2">
+                          TÉRMINOS DE SERVICIO
+                        </h2>
+                        <p className="mb-2">{terminosCondiciones}</p>
+                        <h2 className="text-lg font-bold mb-2 mt-2">
+                          Aviso de Privacidad
+                        </h2>
+                        <p>{avisoPrivacidad}</p>
+                      </div>
+                    </ScrollArea>
+                  </DialogContent>
+                </Dialog>
+              </Label>
             </div>
+            <Button
+              type="submit"
+              className="w-full bg-[#800020] hover:bg-[#491721] text-white"
+              disabled={loading}
+            >
+              Registrarse
+            </Button>
+          </form>
+          <div className="mt-4 text-center">
+            <p className="text-sm">
+              ¿Ya tienes una cuenta?{" "}
+              <Link href="/login" className="text-[#d30000] hover:underline">
+                Inicia sesión
+              </Link>
+            </p>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="birthday">Fecha de Nacimiento</Label>
-            <Input
-              id="birthday"
-              name="birthday"
-              type="date"
-              required
-              onChange={handleChange}
-              className="focus:ring-[#FF0000] text-lg lg:text-base"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="invitationCode">
-              Código de Invitación (opcional)
-            </Label>
-            <Input
-              id="invitationCode"
-              name="invitationCode"
-              placeholder="Código de invitación..."
-              value={formData.invitationCode}
-              onChange={handleChange}
-              className="focus:ring-[#FF0000] text-lg lg:text-sm"
-            />
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="aceptaTerminos"
-              checked={formData.aceptaTerminos}
-              onCheckedChange={handleCheckboxChange}
-            />
-            <Label htmlFor="aceptaTerminos" className="text-sm">
-              Acepto los{" "}
-              <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-                <DialogTrigger asChild>
-                  <span
-                    className="text-[#d30000] hover:underline cursor-pointer"
-                    onClick={openModal}
-                  >
-                    términos y condiciones
-                  </span>
-                </DialogTrigger>
-                <DialogContent className="max-w-[90%] w-[800px] max-h-[80vh]">
-                  <DialogHeader>
-                    <DialogTitle>Términos y Condiciones</DialogTitle>
-                    <DialogDescription>
-                      Por favor, lea atentamente los siguientes términos y
-                      condiciones.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <ScrollArea className="h-[60vh] mt-4">
-                    <div className="text-sm">
-                      <h2 className="text-lg font-bold mb-2">
-                        TÉRMINOS DE SERVICIO
-                      </h2>
-                      <p className="mb-2">{terminosCondiciones}</p>
-                      <h2 className="text-lg font-bold mb-2 mt-2">
-                        Aviso de Privacidad
-                      </h2>
-                      <p>{avisoPrivacidad}</p>
-                    </div>
-                  </ScrollArea>
-                </DialogContent>
-              </Dialog>
-            </Label>
-          </div>
-          <Button
-            type="submit"
-            className="w-full bg-[#800020] hover:bg-[#491721] text-white"
-            disabled={loading}
-          >
-            Registrarse
-          </Button>
-        </form>
-        <div className="mt-4 text-center">
-          <p className="text-sm">
-            ¿Ya tienes una cuenta?{" "}
-            <Link href="/login" className="text-[#d30000] hover:underline">
-              Inicia sesión
-            </Link>
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

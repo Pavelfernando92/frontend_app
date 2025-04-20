@@ -32,7 +32,7 @@ export default function AuthLayout({
   }
 
   return (
-    <div className="flex justify-center items-center min-h-screen p-4">
+    <div>
       {children}
     </div>
   );
