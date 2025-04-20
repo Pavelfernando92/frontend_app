@@ -22,6 +22,13 @@ export const columns: ColumnDef<PromocionInterface>[] = [
   {
     accessorKey: "description",
     header: "Descripción",
+    cell: ({ getValue }) => {
+      const description = getValue() as string;
+      const maxLength = 30; // Máximo de caracteres antes de truncar
+      return description.length > maxLength
+        ? `${description.substring(0, maxLength)}...`
+        : description;
+    },
   },
   {
     accessorKey: "validUntil",
