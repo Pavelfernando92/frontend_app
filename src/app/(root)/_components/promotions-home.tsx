@@ -113,14 +113,6 @@ const PromotionsCards = ({ cargandoPromociones, promociones }: Props) => {
                 transition={{ delay: 0.5, duration: 0.8 }}
               />
             </span>
-            <motion.div
-              className="absolute -top-6 -right-12 text-2xl"
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 1, duration: 0.5 }}
-            >
-              <Sparkles className="h-6 w-6 text-[#FFD700]" />
-            </motion.div>
           </h3>
         </motion.div>
 
@@ -423,7 +415,7 @@ const PromotionsCards = ({ cargandoPromociones, promociones }: Props) => {
                 transition: { duration: 0.2 },
               }}
             >
-              <Card className="bg-gradient-to-r from-[#800020]/40 to-[#FFD700]/20 backdrop-blur-lg border-[#FFD700] p-6 inline-block relative overflow-hidden">
+              <Card className="bg-[#800020] backdrop-blur-lg border-[#FFD700] p-6 inline-block relative overflow-hidden">
                 <DecorativeElements />
                 <CardContent className="text-center p-0 relative z-10">
                   <motion.div
