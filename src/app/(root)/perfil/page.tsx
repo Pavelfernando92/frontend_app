@@ -58,7 +58,7 @@ export default function PerfilPage() {
   }
 
   const handleWhatsAppClick = () => {
-    const phoneNumber = "+525650234852";
+    const phoneNumber = "+8148869153";
     const message = encodeURIComponent("Solicito un retiro");
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
     window.open(whatsappUrl, "_blank");
