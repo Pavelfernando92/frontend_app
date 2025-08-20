@@ -24,11 +24,9 @@ export default function PerfilPage() {
 
   useEffect(() => {
     if (!games || games.length === 0 || !user) return;
-
-    setWinAtLeastOne(games.some((game) => game.winner.id === user.id));
+    setWinAtLeastOne(games.some((game) => game.winner?.id === user.id));
   }, [games]);
 
-  console.log(winAtLeastOne);
 
   useEffect(() => {
     if (!session) {
