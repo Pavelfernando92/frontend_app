@@ -1,5 +1,5 @@
 // hooks/useGameLogic.ts
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { io, Socket } from "socket.io-client";
 import lotussApi from "@/lib/axios";
@@ -8,7 +8,10 @@ import { RoomsInterface } from "../../interfaces/rooms.interface";
 import { WinnerInterface } from "../../interfaces/winner.interface";
 import { ConfigutarionInterface } from "../../interfaces/config.interface";
 
-let socket: Socket;
+// Singleton socket instance
+let globalSocket: Socket | null = null;
+let isConnecting = false;
+let hasInitialized = false;
 
 export const useGameLogic = () => {
   const { data: session, status } = useSession();
@@ -29,88 +32,182 @@ export const useGameLogic = () => {
   const [isDrawStartingModalOpen, setIsDrawStartingModalOpen] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [config, setConfig] = useState<ConfigutarionInterface>();
+  const [isSocketConnected, setIsSocketConnected] = useState(false);
 
+  // Initialize WebSocket connection only once when authenticated
+  useEffect(() => {
+    if (session && status === "authenticated" && !hasInitialized) {
+      hasInitialized = true;
+      
+      // Get the socket URL and ensure it uses the correct protocol
+      const socketUrl = process.env.NEXT_PUBLIC_BACKEND_SOCKET;
+      if (!socketUrl) {
+        console.error("NEXT_PUBLIC_BACKEND_SOCKET environment variable is not set");
+        setErrorModalState({
+          isOpen: true,
+          message: "WebSocket configuration error. Please contact support.",
+        });
+        return;
+      }
+
+      // Convert http:// to ws:// or https:// to wss://
+      const wsUrl = socketUrl.replace(/^http/, 'ws');
+      
+      console.log("Connecting to WebSocket:", wsUrl);
+      console.log("Session token:", session.user.token ? "Present" : "Missing");
+      
+      // Only create socket if it doesn't exist and we're not already connecting
+      if (!globalSocket && !isConnecting) {
+        isConnecting = true;
+        
+        globalSocket = io(wsUrl, {
+          transports: ['websocket', 'polling'],
+          timeout: 10000,
+          reconnection: true,
+          reconnectionAttempts: 5,
+          reconnectionDelay: 1000,
+          forceNew: false,
+          // Temporarily comment out auth to test connection
+          // auth: {
+          //   token: session.user.token
+          // },
+          // extraHeaders: {
+          //   Authorization: `Bearer ${session.user.token}`
+          // }
+        });
+
+        const socket = globalSocket;
+
+        // Test basic connection
+        socket.on("connect", () => {
+          console.log("WebSocket connected successfully with ID:", socket.id);
+          setIsSocketConnected(true);
+          isConnecting = false;
+        });
+
+        socket.on("connect_error", (error) => {
+          console.error("WebSocket connection error:", error);
+          console.error("Error details:", {
+            message: error.message,
+            name: error.name,
+            stack: error.stack
+          });
+          setIsSocketConnected(false);
+          isConnecting = false;
+          setErrorModalState({
+            isOpen: true,
+            message: `Failed to connect to game server: ${error.message || 'Unknown error'}`,
+          });
+        });
+
+        socket.on("disconnect", (reason) => {
+          console.log("WebSocket disconnected:", reason);
+          setIsSocketConnected(false);
+          isConnecting = false;
+          
+          if (reason === "io server disconnect") {
+            // the disconnection was initiated by the server, you need to reconnect manually
+            console.log("Server disconnected, attempting to reconnect...");
+            socket.connect();
+          }
+        });
+
+        socket.on("error", (error) => {
+          console.error("Socket error:", error);
+          setErrorModalState({
+            isOpen: true,
+            message: `Socket error: ${error.message || 'Unknown error'}`,
+          });
+        });
+
+        socket.on("roomData", (roomData: RoomsInterface) => {
+          setRoom(roomData);
+
+          if (roomData.status === "COMPLETA" && roomData.drawStartTime) {
+            const currentTime = new Date();
+            const drawStartTime = new Date(roomData.drawStartTime);
+            const timeRemaining = drawStartTime.getTime() - currentTime.getTime();
+
+            if (timeRemaining > 0) {
+              setTimeRemaining(Math.floor(timeRemaining / 1000));
+              setIsDrawStartingModalOpen(true);
+            }
+          }
+        });
+
+        socket.on("numberAssigned", (updatedNumber) => {
+          setRoom((prevRoom) => {
+            if (!prevRoom) return null;
+            return {
+              ...prevRoom,
+              numbers: prevRoom.numbers.map((n) =>
+                n.id === updatedNumber.id ? updatedNumber : n
+              ),
+            };
+          });
+          setUser(user!.id, session.user.token);
+          if (user!.creditos < (config?.minimumCredits || 100)) {
+            setShowCreditModal(true);
+          }
+        });
+
+        socket.on("roomComplete", (roomComplete) => {
+          const currentTime = new Date();
+          const drawStartTime = new Date(roomComplete.drawStartTime);
+          const timeRemaining = drawStartTime.getTime() - currentTime.getTime();
+
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          setIsDrawStartingModalOpen(true);
+          setTimeRemaining(Math.floor(timeRemaining / 1000));
+        });
+
+        socket.on("timeRemaining", (remainingTime: number) => {
+          setTimeRemaining(Math.floor(remainingTime / 1000));
+          setIsDrawStartingModalOpen(true);
+        });
+
+        socket.on("winnerSelected", (winnerData) => {
+          setUser(user!.id, session.user.token);
+          setWinnerModalState({
+            isOpen: true,
+            winner: {
+              id: winnerData.user.id,
+              name: winnerData.user.nombre,
+              apellido: winnerData.user.apellido_paterno,
+              image: winnerData.user.profilePicture,
+              winningNumber: winnerData.winner.valor,
+            },
+          });
+        });
+
+        socket.on("newRoomAvailable", () => {
+          fetchRoomData(session.user.token);
+        });
+
+        socket.on("error", (msg) => {
+          handleAssignNumberError(msg);
+        });
+      } else if (globalSocket) {
+        // If socket already exists, just update the connection state
+        setIsSocketConnected(globalSocket.connected);
+      }
+    }
+  }, [session, status]);
+
+  // Fetch room data when authenticated
   useEffect(() => {
     if (session && status === "authenticated") {
       fetchRoomData(session.user.token);
-
-      socket = io(process.env.NEXT_PUBLIC_BACKEND_SOCKET!);
-
-      socket.on("roomData", (roomData: RoomsInterface) => {
-        setRoom(roomData);
-
-        if (roomData.status === "COMPLETA" && roomData.drawStartTime) {
-          const currentTime = new Date();
-          const drawStartTime = new Date(roomData.drawStartTime);
-          const timeRemaining = drawStartTime.getTime() - currentTime.getTime();
-
-          if (timeRemaining > 0) {
-            setTimeRemaining(Math.floor(timeRemaining / 1000));
-            setIsDrawStartingModalOpen(true);
-          }
-        }
-      });
-
-      socket.emit("joinRoom", room?.id);
-
-      socket.on("numberAssigned", (updatedNumber) => {
-        setRoom((prevRoom) => {
-          if (!prevRoom) return null;
-          return {
-            ...prevRoom,
-            numbers: prevRoom.numbers.map((n) =>
-              n.id === updatedNumber.id ? updatedNumber : n
-            ),
-          };
-        });
-        setUser(user!.id, session.user.token);
-        if (user!.creditos < (config?.minimumCredits || 100)) {
-          setShowCreditModal(true);
-        }
-      });
-
-      socket.on("roomComplete", (roomComplete) => {
-        const currentTime = new Date();
-        const drawStartTime = new Date(roomComplete.drawStartTime);
-        const timeRemaining = drawStartTime.getTime() - currentTime.getTime();
-
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        setIsDrawStartingModalOpen(true);
-        setTimeRemaining(Math.floor(timeRemaining / 1000));
-      });
-
-      socket.on("timeRemaining", (remainingTime: number) => {
-        setTimeRemaining(Math.floor(remainingTime / 1000));
-        setIsDrawStartingModalOpen(true);
-      });
-
-      socket.on("winnerSelected", (winnerData) => {
-        setUser(user!.id, session.user.token);
-        setWinnerModalState({
-          isOpen: true,
-          winner: {
-            id: winnerData.user.id,
-            name: winnerData.user.nombre,
-            apellido: winnerData.user.apellido_paterno,
-            image: winnerData.user.profilePicture,
-            winningNumber: winnerData.winner.valor,
-          },
-        });
-      });
-
-      socket.on("newRoomAvailable", () => {
-        fetchRoomData(session.user.token);
-      });
-
-      socket.on("error", (msg) => {
-        handleAssignNumberError(msg);
-      });
-
-      return () => {
-        socket.disconnect();
-      };
     }
-  }, [session, status, room?.id]);
+  }, [session, status]);
+
+  // Join room when room data is available and socket is connected
+  useEffect(() => {
+    if (isSocketConnected && room?.id && globalSocket) {
+      console.log("Joining room:", room.id);
+      globalSocket.emit("joinRoom", room.id);
+    }
+  }, [isSocketConnected, room?.id]);
 
   useEffect(() => {
     if (!session) {
@@ -119,7 +216,7 @@ export const useGameLogic = () => {
     fetchConfigData(session.user.token);
   }, [session]);
 
-  const fetchConfigData = async (token: string) => {
+  const fetchConfigData = useCallback(async (token: string) => {
     try {
       const { data } = await lotussApi("/config", {
         headers: { Authorization: `Bearer ${token}` },
@@ -136,9 +233,9 @@ export const useGameLogic = () => {
         message: "Error al obtener la configuración.",
       });
     }
-  };
+  }, []);
 
-  const fetchRoomData = async (token: string) => {
+  const fetchRoomData = useCallback(async (token: string) => {
     try {
       const { data } = await lotussApi.get("/rooms", {
         headers: { Authorization: `Bearer ${token}` },
@@ -151,27 +248,35 @@ export const useGameLogic = () => {
         message: "Error fetching room data. Please try again later.",
       });
     }
-  };
+  }, []);
 
-  const assignNumber = async (numberId: number, roomId: number) => {
+  const assignNumber = useCallback(async (numberId: number, roomId: number) => {
     if (!session || !user || user.creditos < (config?.minimumCredits || 100)) {
       return setShowCreditModal(true);
     }
 
-    socket.emit("assignNumber", {
+    if (!globalSocket || !isSocketConnected) {
+      setErrorModalState({
+        isOpen: true,
+        message: "Not connected to game server. Please refresh the page and try again.",
+      });
+      return;
+    }
+
+    globalSocket.emit("assignNumber", {
       idNumber: numberId,
       idUser: user.id,
       idRoom: roomId,
     });
-  };
+  }, [session, user, config?.minimumCredits, isSocketConnected]);
 
-  const handleAssignNumberError = (msg: unknown) => {
+  const handleAssignNumberError = useCallback((msg: unknown) => {
     // eslint-disable-line @typescript-eslint/no-unused-vars
     setErrorModalState({
       isOpen: true,
       message: "Ocurrió un error al intentar asignar el número.",
     });
-  };
+  }, []);
 
   return {
     session,
@@ -190,5 +295,6 @@ export const useGameLogic = () => {
     assignNumber,
     fetchRoomData,
     config,
+    isSocketConnected,
   };
 };
