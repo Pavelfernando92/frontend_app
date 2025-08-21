@@ -64,7 +64,7 @@ export const useGameLogic = () => {
           };
         });
         setUser(user!.id, session.user.token);
-        if (user!.creditos < 100) {
+        if (user!.creditos < (config?.minimumCredits || 100)) {
           setShowCreditModal(true);
         }
       });
@@ -154,7 +154,7 @@ export const useGameLogic = () => {
   };
 
   const assignNumber = async (numberId: number, roomId: number) => {
-    if (!session || !user || user.creditos < 100) {
+    if (!session || !user || user.creditos < (config?.minimumCredits || 100)) {
       return setShowCreditModal(true);
     }
 
