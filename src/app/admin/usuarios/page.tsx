@@ -14,10 +14,10 @@ export default function UsuariosPage() {
   const { getUsers, users } = useUsersStore();
 
   useEffect(() => {
-    if (status === "authenticated") {
+    if (status === "authenticated" && session?.user?.token) {
       getUsers(session.user.token);
     }
-  }, [status]);
+  }, [status, session?.user?.token, getUsers]);
 
   const isLoading =
     status === "loading" || (status === "authenticated" && users.length === 0);

@@ -27,7 +27,7 @@ const GoalsPage = () => {
       setIsLoading(false);
     };
     getData();
-  }, [user]);
+  }, [user, getGroupMembers, getTotalCreditsGroupPerMonth]);
 
   useEffect(() => {
     if (!creditsPerMonth) return;

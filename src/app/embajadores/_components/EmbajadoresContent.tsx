@@ -39,7 +39,7 @@ const EmbajadoresContent: React.FC = () => {
       setTotalCredits(await getTotalCreditsGroupPerMonth(user.id));
     };
     getMainInfo();
-  }, []);
+  }, [user, getGroupGrowth, getQuantityGroupMembers, getTotalCreditsGroupPerMonth]);
 
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },

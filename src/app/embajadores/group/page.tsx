@@ -39,7 +39,7 @@ export default function GroupPage() {
       }
     };
     getMembers();
-  }, [user]);
+  }, [user, getGroupMembers, toast]);
 
   const handleAddToGroup = async (userId: number) => {
     if (!user) return;

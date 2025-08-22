@@ -26,7 +26,7 @@ export default function EmbajadoresLayout({ children }: Props) {
     };
 
     updateUser();
-  }, [session, status, user]);
+  }, [session, status, user, setUser]);
 
   const CLASSNAME = "mr-2 h-4 w-4";
 

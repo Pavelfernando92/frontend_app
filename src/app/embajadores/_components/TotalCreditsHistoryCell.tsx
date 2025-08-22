@@ -37,7 +37,7 @@ const TransactionHistoryCell: React.FC<TransactionHistoryCellProps> = ({
     };
 
     fetchHistory();
-  }, [userId]);
+  }, [userId, session]);
 
   if (loading) {
     return <span>Cargando...</span>;
