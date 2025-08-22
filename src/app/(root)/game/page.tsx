@@ -40,10 +40,10 @@ export default function GamePage() {
   }, [session]);
 
   useEffect(() => {
-    if (user && user.creditos < (config?.minimumCredits || 100)) {
+    if (user && config && user.creditos < (config?.minimumCredits || 100)) {      
       setShowCreditModal(true);
     }
-  }, [user, config?.minimumCredits]);
+  }, [user, config]);
 
   const handleParticipateClick = () => {
     gridRef.current?.scrollIntoView({ behavior: "smooth" });

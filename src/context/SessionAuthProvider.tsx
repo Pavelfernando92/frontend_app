@@ -7,7 +7,7 @@ interface Props {
 }
 
 const SessionAuthProvider = ({ children }: Props) => {
-  return <SessionProvider>{children}</SessionProvider>;
+  return <SessionProvider refetchInterval={60} refetchOnWindowFocus={true}>{children}</SessionProvider>;
 };
 
 export default SessionAuthProvider;
