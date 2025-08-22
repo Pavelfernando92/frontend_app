@@ -3,7 +3,7 @@ import { Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import lotussApi from "@/lib/axios";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const TotalUsers = () => {
@@ -11,7 +11,7 @@ const TotalUsers = () => {
   const [totalUsers, setTotalUsers] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const getData = async () => {
+  const getData = useCallback(async () => {
     setLoading(true);
     try {
       const res = await lotussApi("/usuarios", {
@@ -25,13 +25,13 @@ const TotalUsers = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session?.user.token]);
 
   useEffect(() => {
     if (status === "authenticated") {
       getData();
     }
-  }, [status]);
+  }, [status, getData]);
 
   return (
     <>

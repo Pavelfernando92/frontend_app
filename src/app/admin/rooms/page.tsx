@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import lotussApi from "@/lib/axios";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { RoomsNumbers } from "@/app/(root)/interfaces/rooms.number.interface";
 import { RefreshCw, Users, Clock, Award } from "lucide-react";
 import { InfoItem } from "./_components/InfoItem";
@@ -26,7 +26,7 @@ function RoomsPage() {
     null
   );
 
-  const getRoom = async () => {
+  const getRoom = useCallback(async () => {
     setLoading(true);
     try {
       const res = await lotussApi("rooms", {
@@ -40,7 +40,7 @@ function RoomsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session?.user.token]);
 
   useEffect(() => {
     if (!session) {
@@ -48,7 +48,7 @@ function RoomsPage() {
       return;
     }
     getRoom();
-  }, [session]);
+  }, [session, getRoom]);
 
   const handleClick = async () => {
     setLoading(true);

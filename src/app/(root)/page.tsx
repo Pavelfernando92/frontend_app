@@ -399,7 +399,7 @@ const RootPage = () => {
                   </div>
                   <h3 className="font-bold text-lg text-white mb-2">{testimonial.name}</h3>
                   <div className="text-2xl font-bold text-[#FFD602] mb-4">{testimonial.amount}</div>
-                  <p className="text-white/80 italic">"{testimonial.quote}"</p>
+                  <p className="text-white/80 italic">&ldquo;{testimonial.quote}&rdquo;</p>
                 </div>
               </motion.div>
             ))}

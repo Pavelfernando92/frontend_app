@@ -82,7 +82,7 @@ export function PromocionForm() {
       }
     };
     fetchPromocion();
-  }, [promotionId, reset]);
+  }, [promotionId, reset, getPromocion]);
 
   const onSubmit = async (values: PromocionFormValues) => {
     setIsSubmitting(true);

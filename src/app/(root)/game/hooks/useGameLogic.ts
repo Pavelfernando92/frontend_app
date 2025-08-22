@@ -34,6 +34,47 @@ export const useGameLogic = () => {
   const [config, setConfig] = useState<ConfigutarionInterface>();
   const [isSocketConnected, setIsSocketConnected] = useState(false);
 
+  const fetchConfigData = useCallback(async (token: string) => {
+    try {
+      const { data } = await lotussApi("/config", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setConfig({
+        minimumCredits: data.minimumCredits,
+        prizeAmount: data.prizeAmount,
+        totalOfNumbers: data.totalOfNumbers,
+      });
+    } catch (error) {
+      console.log(`Error al obtener la configuración`);
+      setErrorModalState({
+        isOpen: true,
+        message: "Error al obtener la configuración.",
+      });
+    }
+  }, []);
+
+  const fetchRoomData = useCallback(async (token: string) => {
+    try {
+      const { data } = await lotussApi.get("/rooms", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setRoom(data[0]);
+    } catch (error) {
+      console.error("Error fetching room:", error);
+      setErrorModalState({
+        isOpen: true,
+        message: "Error fetching room data. Please try again later.",
+      });
+    }
+  }, []);
+
+  const handleAssignNumberError = useCallback((msg: unknown) => {
+    setErrorModalState({
+      isOpen: true,
+      message: "Ocurrió un error al intentar asignar el número.",
+    });
+  }, []);
+
   // Initialize WebSocket connection only once when authenticated
   useEffect(() => {
     if (session && status === "authenticated" && !hasInitialized) {
@@ -67,13 +108,6 @@ export const useGameLogic = () => {
           reconnectionAttempts: 5,
           reconnectionDelay: 1000,
           forceNew: false,
-          // Temporarily comment out auth to test connection
-          // auth: {
-          //   token: session.user.token
-          // },
-          // extraHeaders: {
-          //   Authorization: `Bearer ${session.user.token}`
-          // }
         });
 
         const socket = globalSocket;
@@ -87,11 +121,6 @@ export const useGameLogic = () => {
 
         socket.on("connect_error", (error) => {
           console.error("WebSocket connection error:", error);
-          console.error("Error details:", {
-            message: error.message,
-            name: error.name,
-            stack: error.stack
-          });
           setIsSocketConnected(false);
           isConnecting = false;
           setErrorModalState({
@@ -106,7 +135,6 @@ export const useGameLogic = () => {
           isConnecting = false;
           
           if (reason === "io server disconnect") {
-            // the disconnection was initiated by the server, you need to reconnect manually
             console.log("Server disconnected, attempting to reconnect...");
             socket.connect();
           }
@@ -145,9 +173,11 @@ export const useGameLogic = () => {
               ),
             };
           });
-          setUser(user!.id, session.user.token);
-          if (user!.creditos < (config?.minimumCredits || 100)) {
-            setShowCreditModal(true);
+          if (user) {
+            setUser(user.id, session.user.token);
+            if (user.creditos < (config?.minimumCredits || 100)) {
+              setShowCreditModal(true);
+            }
           }
         });
 
@@ -167,17 +197,19 @@ export const useGameLogic = () => {
         });
 
         socket.on("winnerSelected", (winnerData) => {
-          setUser(user!.id, session.user.token);
-          setWinnerModalState({
-            isOpen: true,
-            winner: {
-              id: winnerData.user.id,
-              name: winnerData.user.nombre,
-              apellido: winnerData.user.apellido_paterno,
-              image: winnerData.user.profilePicture,
-              winningNumber: winnerData.winner.valor,
-            },
-          });
+          if (user) {
+            setUser(user.id, session.user.token);
+            setWinnerModalState({
+              isOpen: true,
+              winner: {
+                id: winnerData.user.id,
+                name: winnerData.user.nombre,
+                apellido: winnerData.user.apellido_paterno,
+                image: winnerData.user.profilePicture,
+                winningNumber: winnerData.winner.valor,
+              },
+            });
+          }
         });
 
         socket.on("newRoomAvailable", () => {
@@ -192,14 +224,14 @@ export const useGameLogic = () => {
         setIsSocketConnected(globalSocket.connected);
       }
     }
-  }, [session, status]);
+  }, [session, status, fetchRoomData, handleAssignNumberError, user, config?.minimumCredits, setUser]);
 
   // Fetch room data when authenticated
   useEffect(() => {
     if (session && status === "authenticated") {
       fetchRoomData(session.user.token);
     }
-  }, [session, status]);
+  }, [session, status, fetchRoomData]);
 
   // Join room when room data is available and socket is connected
   useEffect(() => {
@@ -214,41 +246,7 @@ export const useGameLogic = () => {
       return;
     }
     fetchConfigData(session.user.token);
-  }, [session]);
-
-  const fetchConfigData = useCallback(async (token: string) => {
-    try {
-      const { data } = await lotussApi("/config", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setConfig({
-        minimumCredits: data.minimumCredits,
-        prizeAmount: data.prizeAmount,
-        totalOfNumbers: data.totalOfNumbers,
-      });
-    } catch (error) {
-      console.log(`Error al obtener la configuración`);
-      setErrorModalState({
-        isOpen: true,
-        message: "Error al obtener la configuración.",
-      });
-    }
-  }, []);
-
-  const fetchRoomData = useCallback(async (token: string) => {
-    try {
-      const { data } = await lotussApi.get("/rooms", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setRoom(data[0]);
-    } catch (error) {
-      console.error("Error fetching room:", error);
-      setErrorModalState({
-        isOpen: true,
-        message: "Error fetching room data. Please try again later.",
-      });
-    }
-  }, []);
+  }, [session, fetchConfigData]);
 
   const assignNumber = useCallback(async (numberId: number, roomId: number) => {
     if (!session || !user || user.creditos < (config?.minimumCredits || 100)) {
@@ -269,14 +267,6 @@ export const useGameLogic = () => {
       idRoom: roomId,
     });
   }, [session, user, config?.minimumCredits, isSocketConnected]);
-
-  const handleAssignNumberError = useCallback((msg: unknown) => {
-    // eslint-disable-line @typescript-eslint/no-unused-vars
-    setErrorModalState({
-      isOpen: true,
-      message: "Ocurrió un error al intentar asignar el número.",
-    });
-  }, []);
 
   return {
     session,

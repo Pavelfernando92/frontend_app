@@ -43,7 +43,7 @@ export default function GamePage() {
     if (user && config && user.creditos < (config?.minimumCredits || 100)) {      
       setShowCreditModal(true);
     }
-  }, [user, config]);
+  }, [user, config, setShowCreditModal]);
 
   const handleParticipateClick = () => {
     gridRef.current?.scrollIntoView({ behavior: "smooth" });

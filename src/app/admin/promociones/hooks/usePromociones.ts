@@ -1,17 +1,14 @@
 import lotussApi from "@/lib/axios";
 import { useSession } from "next-auth/react";
 import { PromocionInterface } from "../interface/promocion.interface";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 const usePromociones = () => {
   const { data: session } = useSession();
   const [promociones, setPromociones] = useState<PromocionInterface[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  useEffect(() => {
-    getPromociones();
-  }, []);
 
-  const getPromociones = async () => {
+  const getPromociones = useCallback(async () => {
     try {
       setLoading(true);
       const res = await lotussApi("promotions", {
@@ -25,7 +22,11 @@ const usePromociones = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session?.user.token]);
+
+  useEffect(() => {
+    getPromociones();
+  }, [getPromociones]);
 
   const getPromocion = async (id: number) => {
     try {

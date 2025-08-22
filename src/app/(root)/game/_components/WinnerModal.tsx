@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { ShareSocial } from "react-share-social";
 import {
   Dialog,
@@ -81,9 +82,11 @@ export default function WinnerModal({
                 className="flex flex-col items-center"
               >
                 <div className="relative mb-6">
-                  <img
+                  <Image
                     src={winner.image}
                     alt={`${winner.name} ${winner.apellido}`}
+                    width={128}
+                    height={128}
                     className="rounded-full h-32 w-32 border-4 border-white shadow-lg"
                   />
                   <Trophy className="absolute -top-4 -right-4 h-12 w-12 text-yellow-300" />

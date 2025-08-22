@@ -40,7 +40,7 @@ export default function UpdateUserPage() {
       };
       fetchUser();
     }
-  }, [status, userId]);
+  }, [status, userId, session?.user.token]);
 
   const handleSubmit = async (values: FormValues) => {
     await lotussApi.put(`/usuarios/${userId}`, values, {

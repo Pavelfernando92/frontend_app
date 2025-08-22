@@ -25,7 +25,7 @@ export default function PerfilPage() {
   useEffect(() => {
     if (!games || games.length === 0 || !user) return;
     setWinAtLeastOne(games.some((game) => game.winner?.id === user.id));
-  }, [games]);
+  }, [games, user]);
 
 
   useEffect(() => {

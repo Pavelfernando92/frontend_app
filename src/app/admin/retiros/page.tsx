@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -47,14 +47,7 @@ export default function WithdrawalPage() {
   const { getUsers, users } = useUsersStore();
   const { createRetiro, getRetiros } = useRetiros();
 
-  useEffect(() => {
-    if (session?.user?.token) {
-      getUsers(session.user.token);
-      fetchWithdrawals();
-    }
-  }, [session]);
-
-  const fetchWithdrawals = async () => {
+  const fetchWithdrawals = useCallback(async () => {
     try {
       const allWithdrawals = await getRetiros();
       setWithdrawals(allWithdrawals);
@@ -68,7 +61,14 @@ export default function WithdrawalPage() {
       });
       setIsLoading(false);
     }
-  };
+  }, [getRetiros, toast]);
+
+  useEffect(() => {
+    if (session?.user?.token) {
+      getUsers(session.user.token);
+      fetchWithdrawals();
+    }
+  }, [session, getUsers, fetchWithdrawals]);
 
   const handleWithdrawal = async (e: React.FormEvent) => {
     e.preventDefault();
