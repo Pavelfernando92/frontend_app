@@ -86,7 +86,7 @@ const PromotionsCards = ({ cargandoPromociones, promociones }: Props) => {
         transition={{ duration: 0.8 }}
       >
         <motion.div
-          className="flex items-center justify-between mb-8"
+          className="flex items-center justify-center mb-8"
           initial={{ y: -20 }}
           animate={{ y: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 20 }}
