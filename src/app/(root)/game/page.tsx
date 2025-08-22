@@ -96,7 +96,7 @@ export default function GamePage() {
 
         {/* Number Grid */}
         <div ref={gridRef}>
-          <NumberGrid room={room} user={user!} assignNumber={assignNumber} />
+          <NumberGrid room={room} user={user!} assignNumber={assignNumber} minimumCredits={config?.minimumCredits || 100} />
         </div>
       </div>
     </div>

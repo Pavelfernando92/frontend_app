@@ -1,5 +1,4 @@
 import { RoomsNumbers } from "../../interfaces/rooms.number.interface";
-import { useGameLogic } from "../hooks/useGameLogic";
 
 // NumberItem.tsx
 export interface NumberItemProps {
@@ -7,6 +6,7 @@ export interface NumberItemProps {
   user: User;
   roomId: number;
   assignNumber: (numberId: number, roomId: number) => void;
+  minimumCredits: number;
 }
 
 const NumberItem: React.FC<NumberItemProps> = ({
@@ -14,11 +14,11 @@ const NumberItem: React.FC<NumberItemProps> = ({
   user,
   roomId,
   assignNumber,
+  minimumCredits,
 }) => {
-  const { config } = useGameLogic();
   const isUserNumber = number.userId === user.id;
   const isTaken = !!number.userId;
-  const isDisabled = user.creditos < (config?.minimumCredits || 100) || isTaken;
+  const isDisabled = user.creditos < (minimumCredits || 100) || isTaken;
 
   return (
     <div

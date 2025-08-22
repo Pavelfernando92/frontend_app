@@ -9,12 +9,14 @@ export interface NumberGridProps {
   user: User;
   room: RoomsInterface;
   assignNumber: (numberId: number, roomId: number) => void;
+  minimumCredits: number;
 }
 
 const NumberGrid: React.FC<NumberGridProps> = ({
   user,
   room,
   assignNumber,
+  minimumCredits,
 }) => {
   return (
     <Card className="bg-white/10 backdrop-blur-lg border-none">
@@ -35,6 +37,7 @@ const NumberGrid: React.FC<NumberGridProps> = ({
                   user={user}
                   roomId={room.id}
                   assignNumber={assignNumber}
+                  minimumCredits={minimumCredits}
                 />
               ))}
         </div>
