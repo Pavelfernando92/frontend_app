@@ -17,6 +17,7 @@ export const useGameLogic = () => {
   const { data: session, status } = useSession();
   const { user, setUser } = useUsersStore();
   const [room, setRoom] = useState<RoomsInterface | null>(null);
+  const [isMaintenance, setIsMaintenance] = useState(false);
   const [showCreditModal, setShowCreditModal] = useState(false);
   const [errorModalState, setErrorModalState] = useState({
     isOpen: false,
@@ -44,6 +45,9 @@ export const useGameLogic = () => {
         prizeAmount: data.prizeAmount,
         totalOfNumbers: data.totalOfNumbers,
       });
+      if (data.isMaintenance) {
+        setIsMaintenance(true);
+      }
     } catch (error) {
       console.log(`Error al obtener la configuración`);
       setErrorModalState({
@@ -286,5 +290,6 @@ export const useGameLogic = () => {
     fetchRoomData,
     config,
     isSocketConnected,
+    isMaintenance,
   };
 };

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import useGameConfig from "./hooks/useGameConfig";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -16,6 +17,7 @@ const ConfiguracionPage: React.FC = () => {
     invitationReward,
     creditsPerMonth,
     rewardGoalCredits,
+    isMaintenance,
     manejarEnvio,
     isEditing,
     toggleEditing,
@@ -224,6 +226,31 @@ const ConfiguracionPage: React.FC = () => {
                     required
                     disabled={!isEditing && configExist}
                   />
+                </div>
+              </div>
+            </section>
+
+            {/* Sección de Modo Mantenimiento */}
+            <section>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="isMaintenance"
+                      checked={isMaintenance}
+                      onCheckedChange={(checked) =>
+                        handleInputChange("isMaintenance", checked as boolean)
+                      }
+                      disabled={!isEditing && configExist}
+                    />
+                    <Label htmlFor="isMaintenance" className="text-lg">
+                      Modo Mantenimiento
+                    </Label>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Activa esta opción para poner la aplicación en modo mantenimiento. 
+                    Los usuarios no podrán acceder al juego mientras esté activado.
+                  </p>
                 </div>
               </div>
             </section>

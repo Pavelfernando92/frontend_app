@@ -4,4 +4,7 @@ export interface ConfigutarionInterface {
   prizeAmount: number;
   invitationsForReward?: number;
   invitationReward?: number;
+  creditsPerMonth?: number;
+  rewardGoalCredits?: number;
+  isMaintenance?: boolean;
 }

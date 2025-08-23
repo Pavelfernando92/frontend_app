@@ -15,6 +15,7 @@ const useGameConfig = () => {
     invitationReward: "",
     creditsPerMonth: "",
     rewardGoalCredits: "",
+    isMaintenance: false,
   });
   const [isEditing, setIsEditing] = useState(false);
   const [configExist, setConfigExist] = useState(false);
@@ -48,6 +49,7 @@ const useGameConfig = () => {
         invitationReward: data.invitationReward,
         creditsPerMonth: data.creditsPerMonth,
         rewardGoalCredits: data.rewardGoalCredits,
+        isMaintenance: data.isMaintenance || false,
       });
       setConfigExist(true);
       setIdConfig(data.id);
@@ -73,6 +75,7 @@ const useGameConfig = () => {
       invitationReward,
       creditsPerMonth,
       rewardGoalCredits,
+      isMaintenance,
     } = config;
 
     if (
@@ -110,6 +113,7 @@ const useGameConfig = () => {
           invitationReward: Number(invitationReward),
           creditsPerMonth: Number(creditsPerMonth),
           rewardGoalCredits: Number(rewardGoalCredits),
+          isMaintenance: isMaintenance,
         },
         {
           headers: { Authorization: `Bearer ${session!.user.token}` },
@@ -137,7 +141,7 @@ const useGameConfig = () => {
 
   const toggleEditing = () => setIsEditing((prev) => !prev);
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setConfig((prev) => ({ ...prev, [field]: value }));
   };
 

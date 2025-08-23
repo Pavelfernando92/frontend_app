@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { redirect } from "next/navigation";
 import { NoRoomsAvailable } from "./_components/NoRoomsAvailable";
 import CreditWarningModal from "./_components/CreditWarningModal";
@@ -10,6 +10,7 @@ import NumberGrid from "./_components/NumberGrid";
 import { ErrorModal } from "./_components/ErrorModal";
 import WinnerModal from "./_components/WinnerModal";
 import DrawStartingModal from "./_components/DrawStartingModal";
+import MaintenanceModal from "./_components/MaintenanceModal";
 import { useGameLogic } from "./hooks/useGameLogic";
 import { PrizeDisplay } from "./_components/PrizeDisplay";
 
@@ -29,6 +30,7 @@ export default function GamePage() {
     timeRemaining,
     assignNumber,
     config,
+    isMaintenance,
   } = useGameLogic();
 
   const gridRef = useRef<HTMLDivElement | null>(null); // Ref to the number grid
@@ -40,14 +42,18 @@ export default function GamePage() {
   }, [session]);
 
   useEffect(() => {
-    if (user && config && user.creditos < (config?.minimumCredits || 100)) {      
+    if (user && config && user.creditos < (config?.minimumCredits || 100) && !isMaintenance) {      
       setShowCreditModal(true);
     }
-  }, [user, config, setShowCreditModal]);
+  }, [user, config, setShowCreditModal, isMaintenance]);
 
   const handleParticipateClick = () => {
     gridRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  if (isMaintenance) {
+    return <MaintenanceModal />;
+  }
 
   if (!room) {
     return <NoRoomsAvailable />;
