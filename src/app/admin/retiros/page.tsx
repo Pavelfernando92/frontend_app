@@ -24,24 +24,12 @@ import useUsersStore from "@/store/users.store";
 import { useSession } from "next-auth/react";
 import useRetiros from "./hooks/useRetiros";
 
-type Withdrawal = {
-  id: string;
-  userId: string;
-  quantity: number;
-  createdAt: string;
-  user: {
-    nombre: string;
-    apellido_paterno: string;
-    apellido_materno: string;
-  };
-};
-
 export default function WithdrawalPage() {
   const [withdrawals, setWithdrawals] = useState<RetirosInterface[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<string>("");
   const [withdrawalAmount, setWithdrawalAmount] = useState("");
-  const [creditsUser, setCreditsUser] = useState<number>(0); // Update 1
+  const [creditsUser, setCreditsUser] = useState<number>(0);
   const { toast } = useToast();
   const { data: session } = useSession();
   const { getUsers, users } = useUsersStore();
@@ -51,7 +39,6 @@ export default function WithdrawalPage() {
     try {
       const allWithdrawals = await getRetiros();
       setWithdrawals(allWithdrawals);
-      setIsLoading(false);
     } catch (error) {
       console.error("Error fetching withdrawals:", error);
       toast({
@@ -59,6 +46,7 @@ export default function WithdrawalPage() {
         title: "Error",
         description: "No se pudo obtener el historial de retiros",
       });
+    } finally {
       setIsLoading(false);
     }
   }, [getRetiros, toast]);
@@ -68,13 +56,12 @@ export default function WithdrawalPage() {
       getUsers(session.user.token);
       fetchWithdrawals();
     }
-  }, [session, getUsers, fetchWithdrawals]);
+  }, [session?.user?.token, getUsers, fetchWithdrawals]);
 
   const handleWithdrawal = async (e: React.FormEvent) => {
     e.preventDefault();
     const amount = parseFloat(withdrawalAmount);
     if (isNaN(amount) || amount <= 0 || amount > creditsUser) {
-      // Update 2
       toast({
         title: "Error en el retiro",
         description:
@@ -85,10 +72,9 @@ export default function WithdrawalPage() {
       });
       return;
     }
-    const payload = {
-      quantity: amount,
-      userId: Number(selectedUser),
-    };
+
+    const payload = { quantity: amount, userId: Number(selectedUser) };
+
     try {
       await createRetiro(payload);
       toast({
@@ -98,11 +84,13 @@ export default function WithdrawalPage() {
       });
       setWithdrawalAmount("");
       setSelectedUser("");
-      fetchWithdrawals();
       setCreditsUser(creditsUser - amount);
+
+      // recargar datos
+      fetchWithdrawals();
       getUsers(session!.user.token);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       toast({
         variant: "destructive",
         title: "Error en el retiro",
@@ -114,9 +102,11 @@ export default function WithdrawalPage() {
   useEffect(() => {
     if (!selectedUser || users.length === 0) return;
     const userInfo = users.find((user) => user.id === Number(selectedUser));
-    if (!userInfo) return;
-    setCreditsUser(userInfo.creditos);
+    if (userInfo) setCreditsUser(userInfo.creditos);
   }, [selectedUser, users]);
+
+  if (isLoading) return <p>Cargando...</p>;
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">

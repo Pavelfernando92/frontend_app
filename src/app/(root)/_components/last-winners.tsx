@@ -11,6 +11,7 @@ interface Winner {
   apellido_paterno: string;
   apellido_materno: string;
   profilePicture: string;
+  email: string;
 }
 
 interface WinnerRoom {
@@ -39,7 +40,9 @@ const LastWinners = ({ winners, isLoading }: LastWinnersProps) => {
       >
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#FFD700] mx-auto mb-4"></div>
-          <p className="text-[#FFD700] text-lg font-semibold">Cargando ganadores...</p>
+          <p className="text-[#FFD700] text-lg font-semibold">
+            Cargando ganadores...
+          </p>
         </div>
       </motion.div>
     );
@@ -51,10 +54,10 @@ const LastWinners = ({ winners, isLoading }: LastWinnersProps) => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
+    return date.toLocaleDateString("es-ES", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
     });
   };
 
@@ -62,15 +65,21 @@ const LastWinners = ({ winners, isLoading }: LastWinnersProps) => {
   const getCelebrationBadge = (index: number) => {
     const badges = [
       { icon: Crown, text: "¡GANADOR!", color: "from-[#FFD700] to-[#FFA500]" },
-      { icon: Trophy, text: "¡FELICIDADES!", color: "from-[#FFD700] to-[#FFA500]" },
-      { icon: Award, text: "¡ÉXITO!", color: "from-[#FFD700] to-[#FFA500]" }
+      {
+        icon: Trophy,
+        text: "¡FELICIDADES!",
+        color: "from-[#FFD700] to-[#FFA500]",
+      },
+      { icon: Award, text: "¡ÉXITO!", color: "from-[#FFD700] to-[#FFA500]" },
     ];
-    
+
     const badge = badges[index] || badges[0];
     const IconComponent = badge.icon;
-    
+
     return (
-      <Badge className={`bg-gradient-to-r ${badge.color} text-[#800020] px-3 py-1 font-bold text-sm shadow-lg`}>
+      <Badge
+        className={`bg-gradient-to-r ${badge.color} text-[#800020] px-3 py-1 font-bold text-sm shadow-lg`}
+      >
         <IconComponent className="h-4 w-4 mr-1" />
         {badge.text}
       </Badge>
@@ -163,15 +172,19 @@ const LastWinners = ({ winners, isLoading }: LastWinnersProps) => {
               />
             </h2>
           </motion.div>
-          
+
           <motion.p
             className="text-xl lg:text-2xl text-white font-semibold max-w-3xl mx-auto leading-relaxed"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
           >
-            Estos jugadores han tenido la suerte de ganar recientemente en ScratchRoom. 
-            <span className="text-[#FFD700] font-bold drop-shadow-[0_0_10px_rgba(255,215,0,0.5)]"> ¡Tú podrías ser el próximo!</span>
+            Estos jugadores han tenido la suerte de ganar recientemente en
+            ScratchRoom.
+            <span className="text-[#FFD700] font-bold drop-shadow-[0_0_10px_rgba(255,215,0,0.5)]">
+              {" "}
+              ¡Tú podrías ser el próximo!
+            </span>
           </motion.p>
 
           <motion.div
@@ -257,6 +270,14 @@ const LastWinners = ({ winners, isLoading }: LastWinnersProps) => {
                   >
                     {winner.winner.nombre} {winner.winner.apellido_paterno}
                   </motion.h3>
+
+                    {/* Winner Info */}
+                  <motion.p
+                    className="font-bold text-xl text-white mb-2"
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    {winner.winner.email}
+                  </motion.p>
 
                   <motion.div
                     className="text-[#FFD700] text-lg font-semibold mb-4"
