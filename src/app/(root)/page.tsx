@@ -23,24 +23,7 @@ import PromotionsCards from "./_components/promotions-home";
 import LastWinners from "./_components/last-winners";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-
-interface Winner {
-  id: number;
-  nombre: string;
-  apellido_paterno: string;
-  apellido_materno: string;
-  profilePicture: string;
-}
-
-interface WinnerRoom {
-  id: number;
-  status: string;
-  userWinnerId: number;
-  drawStartTime: string;
-  createdAt: string;
-  updatedAt: string;
-  winner: Winner;
-}
+import { WinnerRoom } from "./interfaces/winner.interface";
 
 const RootPage = () => {
   const { data: session, status } = useSession();

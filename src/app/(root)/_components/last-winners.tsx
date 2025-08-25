@@ -4,25 +4,7 @@ import { motion } from "framer-motion";
 import { Crown, Trophy, Star, Sparkles, TrendingUp, Award } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-
-interface Winner {
-  id: number;
-  nombre: string;
-  apellido_paterno: string;
-  apellido_materno: string;
-  profilePicture: string;
-  email: string;
-}
-
-interface WinnerRoom {
-  id: number;
-  status: string;
-  userWinnerId: number;
-  drawStartTime: string;
-  createdAt: string;
-  updatedAt: string;
-  winner: Winner;
-}
+import { WinnerRoom } from "../interfaces/winner.interface";
 
 interface LastWinnersProps {
   winners: WinnerRoom[];
