@@ -34,6 +34,21 @@ export const useGameLogic = () => {
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [config, setConfig] = useState<ConfigutarionInterface>();
   const [isSocketConnected, setIsSocketConnected] = useState(false);
+  const [isUpdatingUser, setIsUpdatingUser] = useState(false);
+
+  // Función para actualizar el usuario
+  const updateUser = useCallback(async () => {
+    if (!session?.user?.token || !user?.id) return;
+    
+    try {
+      setIsUpdatingUser(true);
+      await setUser(user.id, session.user.token);
+    } catch (error) {
+      console.error("Error updating user:", error);
+    } finally {
+      setIsUpdatingUser(false);
+    }
+  }, [session?.user?.token, user?.id, setUser]);
 
   const fetchConfigData = useCallback(async (token: string) => {
     try {
@@ -78,6 +93,14 @@ export const useGameLogic = () => {
       message: "Ocurrió un error al intentar asignar el número.",
     });
   }, []);
+
+  // Actualizar usuario cuando se autentica y cuando entra a la página
+  // Esto asegura que los créditos estén siempre actualizados al entrar al juego
+  useEffect(() => {
+    if (session && status === "authenticated" && user?.id) {
+      updateUser();
+    }
+  }, [session, status, user?.id, updateUser]);
 
   // Initialize WebSocket connection only once when authenticated
   useEffect(() => {
@@ -177,8 +200,15 @@ export const useGameLogic = () => {
               ),
             };
           });
+          
+          // Actualizar usuario después de asignar un número para reflejar créditos gastados
+          // Esto asegura que los créditos se actualicen inmediatamente después de jugar
           if (user) {
-            setUser(user.id, session.user.token);
+            // Pequeño delay para asegurar que el servidor haya procesado la transacción
+            setTimeout(() => {
+              updateUser();
+            }, 500);
+            
             if (user.creditos < (config?.minimumCredits || 100)) {
               setShowCreditModal(true);
             }
@@ -202,7 +232,8 @@ export const useGameLogic = () => {
 
         socket.on("winnerSelected", (winnerData) => {
           if (user) {
-            setUser(user.id, session.user.token);
+            // Actualizar usuario después de que se seleccione un ganador
+            updateUser();
             setWinnerModalState({
               isOpen: true,
               winner: {
@@ -228,7 +259,7 @@ export const useGameLogic = () => {
         setIsSocketConnected(globalSocket.connected);
       }
     }
-  }, [session, status, fetchRoomData, handleAssignNumberError, user, config?.minimumCredits, setUser]);
+  }, [session, status, fetchRoomData, handleAssignNumberError, user, config?.minimumCredits, updateUser]);
 
   // Fetch room data when authenticated
   useEffect(() => {
@@ -253,6 +284,13 @@ export const useGameLogic = () => {
   }, [session, fetchConfigData]);
 
   const assignNumber = useCallback(async (numberId: number, roomId: number) => {
+    // Prevenir asignación si se está actualizando el usuario
+    // Esto evita inconsistencias cuando el usuario presiona rápidamente varios números
+    if (isUpdatingUser) {
+      console.log("No se puede asignar número mientras se actualiza el usuario");
+      return;
+    }
+
     if (!session || !user || user.creditos < (config?.minimumCredits || 100)) {
       return setShowCreditModal(true);
     }
@@ -270,7 +308,7 @@ export const useGameLogic = () => {
       idUser: user.id,
       idRoom: roomId,
     });
-  }, [session, user, config?.minimumCredits, isSocketConnected]);
+  }, [session, user, config?.minimumCredits, isSocketConnected, isUpdatingUser]);
 
   return {
     session,
@@ -291,5 +329,7 @@ export const useGameLogic = () => {
     config,
     isSocketConnected,
     isMaintenance,
+    isUpdatingUser,
+    updateUser,
   };
 };

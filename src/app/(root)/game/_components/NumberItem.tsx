@@ -7,6 +7,7 @@ export interface NumberItemProps {
   roomId: number;
   assignNumber: (numberId: number, roomId: number) => void;
   minimumCredits: number;
+  isUpdatingUser?: boolean;
 }
 
 const NumberItem: React.FC<NumberItemProps> = ({
@@ -15,10 +16,11 @@ const NumberItem: React.FC<NumberItemProps> = ({
   roomId,
   assignNumber,
   minimumCredits,
+  isUpdatingUser = false,
 }) => {
   const isUserNumber = number.userId === user.id;
   const isTaken = !!number.userId;
-  const isDisabled = user.creditos < (minimumCredits || 100) || isTaken;
+  const isDisabled = user.creditos < (minimumCredits || 100) || isTaken || isUpdatingUser;
 
   return (
     <div

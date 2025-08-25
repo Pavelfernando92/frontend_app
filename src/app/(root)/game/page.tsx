@@ -13,6 +13,7 @@ import DrawStartingModal from "./_components/DrawStartingModal";
 import MaintenanceModal from "./_components/MaintenanceModal";
 import { useGameLogic } from "./hooks/useGameLogic";
 import { PrizeDisplay } from "./_components/PrizeDisplay";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function GamePage() {
   const {
@@ -31,6 +32,7 @@ export default function GamePage() {
     assignNumber,
     config,
     isMaintenance,
+    isUpdatingUser,
   } = useGameLogic();
 
   const gridRef = useRef<HTMLDivElement | null>(null); // Ref to the number grid
@@ -64,6 +66,14 @@ export default function GamePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#800020] to-[#FF0000] text-white">
       <div className="container mx-auto px-4 py-8">
+        {/* Indicador de carga cuando se actualiza el usuario */}
+        {isUpdatingUser && (
+          <div className="fixed top-4 right-4 z-50 bg-black/80 rounded-lg p-3 flex items-center gap-2">
+            <LoadingSpinner size={16} />
+            <span className="text-sm text-white">Actualizando créditos...</span>
+          </div>
+        )}
+
         <CreditWarningModal
           showModal={showCreditModal}
           setShowModal={setShowCreditModal}
@@ -101,8 +111,24 @@ export default function GamePage() {
         <ColorLegend />
 
         {/* Number Grid */}
-        <div ref={gridRef}>
-          <NumberGrid room={room} user={user!} assignNumber={assignNumber} minimumCredits={config?.minimumCredits || 100} />
+        <div ref={gridRef} className="relative">
+          <NumberGrid 
+            room={room} 
+            user={user!} 
+            assignNumber={assignNumber} 
+            minimumCredits={config?.minimumCredits || 100} 
+            isUpdatingUser={isUpdatingUser}
+          />
+          
+          {/* Overlay para deshabilitar interacción durante actualización */}
+          {isUpdatingUser && (
+            <div className="absolute inset-0 bg-black/20 backdrop-blur-sm rounded-lg flex items-center justify-center z-10">
+              <div className="bg-black/80 rounded-lg p-4 flex items-center gap-3">
+                <LoadingSpinner size={20} />
+                <span className="text-white font-medium">Actualizando créditos...</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

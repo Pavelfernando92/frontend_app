@@ -10,6 +10,7 @@ export interface NumberGridProps {
   room: RoomsInterface;
   assignNumber: (numberId: number, roomId: number) => void;
   minimumCredits: number;
+  isUpdatingUser?: boolean;
 }
 
 const NumberGrid: React.FC<NumberGridProps> = ({
@@ -17,6 +18,7 @@ const NumberGrid: React.FC<NumberGridProps> = ({
   room,
   assignNumber,
   minimumCredits,
+  isUpdatingUser = false,
 }) => {
   return (
     <Card className="bg-white/10 backdrop-blur-lg border-none">
@@ -38,6 +40,7 @@ const NumberGrid: React.FC<NumberGridProps> = ({
                   roomId={room.id}
                   assignNumber={assignNumber}
                   minimumCredits={minimumCredits}
+                  isUpdatingUser={isUpdatingUser}
                 />
               ))}
         </div>
