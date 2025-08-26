@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { Gamepad2, MoreHorizontal, Phone, UserSearch } from "lucide-react";
+import { Gamepad2, MoreHorizontal, Phone, UserSearch, History } from "lucide-react";
 import ButtonDelete from "./button-delete";
 import {
   Dialog,
@@ -26,6 +26,7 @@ import lotussApi from "@/lib/axios";
 import { signOut, useSession } from "next-auth/react";
 import useUsersStore from "@/store/users.store";
 import { Router } from "next/router";
+import CreditsHistoryModal from "./credits-history-modal";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Props = {
@@ -39,6 +40,7 @@ const ActionsMenu = ({ toast, user, router }: Props) => {
   const { getUsers } = useUsersStore();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [coins, setCoins] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -93,73 +95,89 @@ const ActionsMenu = ({ toast, user, router }: Props) => {
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
-          <span className="sr-only">Open menu</span>
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-        <DropdownMenuItem
-          onClick={() => {
-            navigator.clipboard.writeText(user.telefono);
-            toast({
-              title: "Número de Teléfono",
-              description: `El número de teléfono se copio en el portapapeles correctamente: ${user.telefono}`,
-            });
-          }}
-        >
-          <Phone className="mr-2 h-4 w-4" />
-          Copiar número de teléfono
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() => {
-            router.push(`/admin/usuarios/form/${user.id}`);
-          }}
-        >
-          <UserSearch className="mr-2 h-4 w-4" />
-          Información del usuario
-        </DropdownMenuItem>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-              <Gamepad2 className="mr-2 h-4 w-4" />
-              Asignar COINS
-            </DropdownMenuItem>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Asignar COINS</DialogTitle>
-              <DialogDescription>
-                El usuario actualmente tiene {user.creditos} COINS
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="coins" className="text-right">
-                  COINS
-                </Label>
-                <Input
-                  id="coins"
-                  className="col-span-2"
-                  value={coins}
-                  onChange={onChangeCoins}
-                />
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+          <DropdownMenuItem
+            onClick={() => {
+              navigator.clipboard.writeText(user.telefono);
+              toast({
+                title: "Número de Teléfono",
+                description: `El número de teléfono se copio en el portapapeles correctamente: ${user.telefono}`,
+              });
+            }}
+          >
+            <Phone className="mr-2 h-4 w-4" />
+            Copiar número de teléfono
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => {
+              router.push(`/admin/usuarios/form/${user.id}`);
+            }}
+          >
+            <UserSearch className="mr-2 h-4 w-4" />
+            Información del usuario
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => setIsHistoryModalOpen(true)}
+          >
+            <History className="mr-2 h-4 w-4" />
+            Ver Historial de Créditos
+          </DropdownMenuItem>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <Gamepad2 className="mr-2 h-4 w-4" />
+                Asignar COINS
+              </DropdownMenuItem>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Asignar COINS</DialogTitle>
+                <DialogDescription>
+                  El usuario actualmente tiene {user.creditos} COINS
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="coins" className="text-right">
+                    COINS
+                  </Label>
+                  <Input
+                    id="coins"
+                    className="col-span-2"
+                    value={coins}
+                    onChange={onChangeCoins}
+                  />
+                </div>
               </div>
-            </div>
-            <DialogFooter>
-              <Button type="submit" onClick={handleSubmit} disabled={loading}>
-                Guardar Cambios
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-        <ButtonDelete user={user} />
-      </DropdownMenuContent>
-    </DropdownMenu>
+              <DialogFooter>
+                <Button type="submit" onClick={handleSubmit} disabled={loading}>
+                  Guardar Cambios
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <ButtonDelete user={user} />
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {/* Modal del Historial de Créditos */}
+      <CreditsHistoryModal
+        isOpen={isHistoryModalOpen}
+        onClose={() => setIsHistoryModalOpen(false)}
+        userId={user.id}
+        userName={`${user.nombre} ${user.apellido_paterno}`}
+      />
+    </>
   );
 };
 

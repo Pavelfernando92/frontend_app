@@ -5,6 +5,7 @@ import { ColumnDef, Row } from "@tanstack/react-table";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import ActionsMenu from "./actions-menu";
+import { format } from "date-fns";
 
 const ActionsCell = ({ row }: { row: Row<User> }) => {
   const { toast } = useToast();
@@ -15,16 +16,66 @@ const ActionsCell = ({ row }: { row: Row<User> }) => {
 
 export const columns: ColumnDef<User>[] = [
   {
+    accessorKey: "nombre",
+    header: "Nombre",
+    cell: ({ row }) => {
+      const user = row.original;
+      return (
+        <div className="flex flex-col">
+          <span className="font-medium">
+            {user.nombre} {user.apellido_paterno} {user.apellido_materno}
+          </span>
+        </div>
+      );
+    },
+  },
+  {
     accessorKey: "email",
     header: "Email",
+    cell: ({ row }) => {
+      const user = row.original;
+      return (
+        <div className="flex flex-col">
+          <span className="font-medium">{user.email}</span>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "apellido_paterno",
+    header: "Apellido Paterno",
+    cell: ({ row }) => row.original.apellido_paterno,
+  },
+  {
+    accessorKey: "apellido_materno",
+    header: "Apellido Materno",
+    cell: ({ row }) => row.original.apellido_materno,
   },
   {
     accessorKey: "telefono",
-    header: "Telefono",
+    header: "Teléfono",
+    cell: ({ row }) => row.original.telefono,
   },
   {
     accessorKey: "creditos",
-    header: "Creditos",
+    header: "Créditos",
+    cell: ({ row }) => {
+      const creditos = row.original.creditos;
+      return (
+        <span className={`font-mono ${creditos > 0 ? 'text-green-600' : 'text-red-600'}`}>
+          {creditos.toLocaleString()}
+        </span>
+      );
+    },
+  },
+  {
+    accessorKey: "createdAt",
+    header: "Fecha de Registro",
+    cell: ({ row }) => {
+      const date = new Date(row.original.createdAt);
+      return format(date, "dd/MM/yyyy HH:mm");
+    },
+    sortingFn: "datetime",
   },
   {
     accessorKey: "status",
