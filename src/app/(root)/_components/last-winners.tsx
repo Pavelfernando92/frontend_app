@@ -253,14 +253,6 @@ const LastWinners = ({ winners, isLoading }: LastWinnersProps) => {
                     {winner.winner.nombre} {winner.winner.apellido_paterno}
                   </motion.h3>
 
-                    {/* Winner Info */}
-                  <motion.p
-                    className="font-bold text-xl text-white mb-2"
-                    whileHover={{ scale: 1.05 }}
-                  >
-                    {winner.winner.email}
-                  </motion.p>
-
                   <motion.div
                     className="text-[#FFD700] text-lg font-semibold mb-4"
                     animate={{
