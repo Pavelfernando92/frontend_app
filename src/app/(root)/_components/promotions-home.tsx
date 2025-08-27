@@ -19,6 +19,7 @@ import {
   PartyPopper,
   Star,
   TrendingUp,
+  ImageIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
@@ -130,7 +131,7 @@ const PromotionsCards = ({ cargandoPromociones, promociones }: Props) => {
                     <Skeleton className="h-6 w-3/4 bg-[#FFFFFF]/10" />
                   </CardHeader>
                   <CardContent>
-                    <Skeleton className="h-24 w-full bg-[#FFFFFF]/10" />
+                    <Skeleton className="h-48 w-full bg-[#FFFFFF]/10" />
                   </CardContent>
                   <CardFooter>
                     <Skeleton className="h-10 w-full bg-[#FFFFFF]/10" />
@@ -220,7 +221,6 @@ const PromotionsCards = ({ cargandoPromociones, promociones }: Props) => {
                           : "translateZ(0) rotateX(0) rotateY(0)",
                       }}
                     >
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent z-[1]"></div>
                       {esActiva && (
                         <>
                           <div className="absolute top-0 right-0 z-10">
@@ -281,11 +281,33 @@ const PromotionsCards = ({ cargandoPromociones, promociones }: Props) => {
                         </>
                       )}
 
-                      <CardHeader className="relative z-10">
+                      {/* Imagen de la promoción - Más prominente */}
+                      <div className="relative h-64 overflow-hidden">
+                        {promocion.image ? (
+                          <motion.img
+                            src={promocion.image}
+                            alt={promocion.title}
+                            className="w-full h-full object-cover"
+                            initial={{ scale: 1 }}
+                            whileHover={{ scale: 1.1 }}
+                            transition={{ duration: 0.3 }}
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">
+                            <div className="text-center text-gray-400">
+                              <ImageIcon className="h-20 w-20 mx-auto mb-3 opacity-50" />
+                              <span className="text-lg">Sin imagen</span>
+                            </div>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                      </div>
+
+                      <CardHeader className="relative z-10 pb-2">
                         <CardTitle
-                          className={`text-xl ${
+                          className={`text-2xl ${
                             esActiva ? "text-[#FFD700]" : "text-gray-300"
-                          } flex items-center gap-2 line-clamp-2 min-h-[60px]`}
+                          } flex items-center gap-2 line-clamp-2 min-h-[60px] text-center justify-center`}
                         >
                           {esActiva && (
                             <motion.div
@@ -299,13 +321,13 @@ const PromotionsCards = ({ cargandoPromociones, promociones }: Props) => {
                                 repeatDelay: 3,
                               }}
                             >
-                              <Star className="h-5 w-5 text-[#FFD700] fill-[#FFD700]" />
+                              <Star className="h-6 w-6 text-[#FFD700] fill-[#FFD700]" />
                             </motion.div>
                           )}
                           {promocion.title}
                         </CardTitle>
                         {esActiva && (
-                          <CardDescription className="flex items-center mt-2 text-white">
+                          <CardDescription className="flex items-center justify-center mt-2 text-white">
                             <motion.div
                               animate={{ scale: [1, 1.2, 1] }}
                               transition={{
@@ -336,27 +358,14 @@ const PromotionsCards = ({ cargandoPromociones, promociones }: Props) => {
                         )}
                       </CardHeader>
 
-                      <CardContent className="relative z-10">
-                        <motion.p
-                          className={`${
-                            esActiva ? "text-white" : "text-gray-400"
-                          } leading-relaxed min-h-[80px] overflow-y-auto max-h-[120px] text-sm md:text-base`}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.2 + index * 0.1 }}
-                        >
-                          {promocion.description}
-                        </motion.p>
-                      </CardContent>
-
                       <CardFooter className="flex justify-between items-center border-t border-[#FFFFFF]/10 pt-4 relative z-10">
                         <motion.div
-                          className="flex items-center text-sm text-white/90 bg-black/20 px-2 py-1 rounded-md"
+                          className="flex items-center text-sm text-white/90 bg-black/20 px-3 py-2 rounded-md"
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 0.3 + index * 0.1 }}
                         >
-                          <CalendarDays className="h-4 w-4 mr-1" />
+                          <CalendarDays className="h-4 w-4 mr-2" />
                           <span className="whitespace-nowrap">
                             Válida hasta:{" "}
                             {new Date(

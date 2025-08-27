@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { MoreHorizontal, UserSearch } from "lucide-react";
+import { MoreHorizontal, Edit, Trash } from "lucide-react";
 import { PromocionInterface } from "../interface/promocion.interface";
 import ButtonDelete from "./button-delete";
 
@@ -36,9 +36,11 @@ const ActionsMenu = ({ promotion, router }: Props) => {
             router.push(`/admin/promociones/form/${promotion.id}`);
           }}
         >
-          <UserSearch className="mr-2 h-4 w-4" />
+          <Edit className="mr-2 h-4 w-4" />
           Editar Promoción
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <ButtonDelete promotion={promotion} />
       </DropdownMenuContent>
     </DropdownMenu>
   );

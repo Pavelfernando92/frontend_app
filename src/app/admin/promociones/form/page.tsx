@@ -1,4 +1,4 @@
-import { PromocionForm } from "../_components/promocion-form";
+import PromocionForm from "../_components/promocion-form";
 
 export default function FormPage() {
   return (

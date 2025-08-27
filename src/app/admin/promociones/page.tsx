@@ -1,14 +1,23 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import usePromociones from "./hooks/usePromociones";
 import { columns } from "./_components/columns-promotions";
 import { DataTable } from "./_components/data-table";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { usePromocionesStore } from "@/store/promociones.store";
+import { useSession } from "next-auth/react";
+import { useEffect } from "react";
 
 export default function PromocionesPage() {
-  const { promociones, loading } = usePromociones();
+  const { data: session } = useSession();
+  const { promociones, loading, fetchPromociones } = usePromocionesStore();
+
+  useEffect(() => {
+    if (session?.user.token) {
+      fetchPromociones(session.user.token);
+    }
+  }, [session?.user.token, fetchPromociones]);
 
   return (
     <div className="container mx-auto py-10 w-full">

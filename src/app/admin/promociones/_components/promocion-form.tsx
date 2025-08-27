@@ -1,115 +1,132 @@
 "use client";
-
-import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ErrorMessage } from "@/components/ui/error-message";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import usePromociones from "../hooks/usePromociones";
-import { PromocionInterface } from "../interface/promocion.interface";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter, useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { usePromocionesStore } from "@/store/promociones.store";
+import { PromocionInterface } from "../interface/promocion.interface";
 
-// --- Zod schema ---
 const promocionSchema = z.object({
-  title: z.string().min(1, "El título es obligatorio"),
-  description: z.string().min(1, "La descripción es obligatoria"),
-  validUntil: z.coerce.date({
-    required_error: "La fecha es obligatoria",
-    invalid_type_error: "Fecha inválida",
+  title: z.string().min(1, "El título es requerido"),
+  description: z.string().min(1, "La descripción es requerida"),
+  validUntil: z.date({
+    required_error: "La fecha de validez es requerida",
   }),
-  status: z.boolean().optional(), // solo requerido en edición
+  status: z.boolean().default(true),
+  image: z.instanceof(File).optional(),
 });
 
-type PromocionFormValues = z.infer<typeof promocionSchema>;
+type PromocionFormData = z.infer<typeof promocionSchema>;
 
-export function PromocionForm() {
-  const router = useRouter();
-  const { promotionId } = useParams();
-  const { getPromocion, createPromotion, updatePromotion } = usePromociones();
+interface Props {
+  promotion?: PromocionInterface;
+}
+
+const PromocionForm = ({ promotion }: Props) => {
+  const { data: session } = useSession();
   const { toast } = useToast();
-
+  const router = useRouter();
+  const { createPromotion, updatePromotion, fetchPromociones } = usePromocionesStore();
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [promocion, setPromocion] = useState<PromocionInterface | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(
+    promotion?.image || null
+  );
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
+    setValue,
     watch,
-  } = useForm<PromocionFormValues>({
+  } = useForm<PromocionFormData>({
     resolver: zodResolver(promocionSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      validUntil: new Date(),
-      status: true,
+      title: promotion?.title || "",
+      description: promotion?.description || "",
+      status: promotion?.status ?? true,
     },
   });
 
+  const titleValue = watch("title");
+
   useEffect(() => {
-    const fetchPromocion = async () => {
-      if (promotionId !== null && promotionId !== undefined) {
-        setIsEditing(true);
-        const promocionFetch = await getPromocion(Number(promotionId));
-        setPromocion(promocionFetch);
+    if (titleValue) {
+      setValue("description", titleValue);
+    }
+  }, [titleValue, setValue]);
 
-        const formattedDate = new Date(promocionFetch.validUntil)
-          .toISOString()
-          .split("T")[0];
+  const onSubmit = async (values: PromocionFormData) => {
+    if (!session?.user.token) {
+      toast({
+        title: "Error",
+        description: "No tienes autorización para realizar esta acción.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-        reset({
-          title: promocionFetch.title,
-          description: promocionFetch.description,
-          validUntil: formattedDate as unknown as Date,
-          status: promocionFetch.status,
-        });
-      }
-    };
-    fetchPromocion();
-  }, [promotionId, reset, getPromocion]);
-
-  const onSubmit = async (values: PromocionFormValues) => {
-    setIsSubmitting(true);
     try {
-      if (isEditing && promocion) {
-        await updatePromotion(promocion.id, values);
+      setIsSubmitting(true);
+
+      if (promotion) {
+        // Actualizar promoción existente
+        const updateData: any = {
+          title: values.title,
+          description: values.description,
+          validUntil: values.validUntil.toISOString().split('T')[0],
+          status: values.status,
+        };
+
+        if (values.image) {
+          updateData.image = values.image;
+        }
+
+        await updatePromotion(promotion.id, updateData, session.user.token);
+        
         toast({
           title: "Promoción actualizada",
           description: "La promoción se ha actualizado correctamente.",
           variant: "success",
         });
-        router.push("/admin/promociones");
       } else {
-        await createPromotion(values);
+        // Crear nueva promoción
+        const createData: any = {
+          title: values.title,
+          description: values.description,
+          validUntil: values.validUntil.toISOString().split('T')[0],
+        };
+
+        if (values.image) {
+          createData.image = values.image;
+        }
+
+        await createPromotion(createData, session.user.token);
+        
         toast({
           title: "Promoción creada",
           description: "La promoción se ha creado correctamente.",
           variant: "success",
         });
-        router.push("/admin/promociones");
       }
-      router.refresh();
-    } catch (err) {
-      console.error("Error al guardar la promoción:", err);
+
+      // Refrescar la lista de promociones
+      await fetchPromociones(session.user.token);
+      
+      router.push("/admin/promociones");
+    } catch (error) {
+      console.error("Error al guardar la promoción:", error);
       toast({
         title: "Error",
-        description: "Error al guardar la promoción",
+        description: "No se pudo guardar la promoción. Inténtalo de nuevo.",
         variant: "destructive",
       });
     } finally {
@@ -117,77 +134,138 @@ export function PromocionForm() {
     }
   };
 
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setValue("image", file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setValue("image", undefined);
+    setImagePreview(null);
+  };
+
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>
-          {isEditing ? "Editar Promoción" : "Nueva Promoción"}
-        </CardTitle>
-      </CardHeader>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">Título</Label>
-            <Input
-              id="title"
-              {...register("title")}
-              placeholder="Título de la promoción"
-            />
-            {errors.title && <ErrorMessage message={errors.title.message || ""} />}
-          </div>
+    <div className="max-w-2xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-6">
+        {promotion ? "Editar Promoción" : "Crear Nueva Promoción"}
+      </h1>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Descripción</Label>
-            <Textarea
-              id="description"
-              {...register("description")}
-              placeholder="Describe la promoción"
-              rows={4}
-            />
-            {errors.description && (
-              <ErrorMessage message={errors.description.message || ""} />
-            )}
-          </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* Título */}
+        <div>
+          <Label htmlFor="title">Título *</Label>
+          <Input
+            id="title"
+            {...register("title")}
+            placeholder="Ingresa el título de la promoción"
+            className="mt-1"
+          />
+          {errors.title && (
+            <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
+          )}
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="validUntil">Válida hasta</Label>
-            <Input id="validUntil" type="date" {...register("validUntil")} />
-            {errors.validUntil && (
-              <ErrorMessage message={errors.validUntil.message || ""} />
-            )}
-          </div>
-
-          {isEditing && (
-            <div className="flex items-center space-x-2">
-              <input
-                id="isActive"
-                type="checkbox"
-                {...register("status")}
-                defaultChecked={promocion?.status}
+        {/* Imagen */}
+        <div>
+          <Label htmlFor="image">Imagen</Label>
+          <Input
+            id="image"
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="mt-1"
+          />
+          {imagePreview && (
+            <div className="mt-3 relative">
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="w-32 h-32 object-cover rounded-lg border"
               />
-              <Label htmlFor="isActive">¿Promoción activa?</Label>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={removeImage}
+                className="absolute -top-2 -right-2 rounded-full w-6 h-6 p-0"
+              >
+                ×
+              </Button>
             </div>
           )}
-        </CardContent>
+        </div>
 
-        <CardFooter className="flex justify-between">
-          <Button type="button" variant="outline" onClick={() => router.back()}>
-            Cancelar
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
+        {/* Fecha de validez */}
+        <div>
+          <Label htmlFor="validUntil">Válido hasta *</Label>
+          <Input
+            id="validUntil"
+            type="date"
+            {...register("validUntil", {
+              valueAsDate: true,
+            })}
+            className="mt-1"
+          />
+          {errors.validUntil && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.validUntil.message}
+            </p>
+          )}
+        </div>
+
+        {/* Estatus */}
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="status"
+            {...register("status")}
+            defaultChecked={promotion?.status ?? true}
+          />
+          <Label htmlFor="status">Promoción activa</Label>
+        </div>
+
+        {/* Descripción oculta - se llena automáticamente con el título */}
+        <div className="hidden">
+          <Textarea
+            {...register("description")}
+            value={titleValue || ""}
+          />
+        </div>
+
+        {/* Botones */}
+        <div className="flex gap-4">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="flex-1"
+          >
             {isSubmitting ? (
               <>
-                <LoadingSpinner size={16} className="mr-2" />
-                {isEditing ? "Actualizando..." : "Creando..."}
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                {promotion ? "Actualizando..." : "Creando..."}
               </>
-            ) : isEditing ? (
-              "Actualizar"
             ) : (
-              "Crear"
+              promotion ? "Actualizar Promoción" : "Crear Promoción"
             )}
           </Button>
-        </CardFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push("/admin/promociones")}
+            disabled={isSubmitting}
+          >
+            Cancelar
+          </Button>
+        </div>
       </form>
-    </Card>
+    </div>
   );
-}
+};
+
+export default PromocionForm;

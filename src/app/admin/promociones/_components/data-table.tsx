@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import {
   ColumnDef,
@@ -34,9 +34,15 @@ export function DataTable<TData, TValue>({
   data,
 }: DataTableProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [tableData, setTableData] = useState<TData[]>(data);
+
+  // Actualizar los datos de la tabla cuando cambien los datos externos
+  useEffect(() => {
+    setTableData(data);
+  }, [data]);
 
   const table = useReactTable({
-    data,
+    data: tableData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
