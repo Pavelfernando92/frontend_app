@@ -13,6 +13,7 @@ const ConfiguracionPage: React.FC = () => {
     cantidadGanancia,
     monedasRequeridas,
     numerosTotales,
+    minimumNumbersToAlert,
     invitationsForReward,
     invitationReward,
     creditsPerMonth,
@@ -34,7 +35,7 @@ const ConfiguracionPage: React.FC = () => {
             <Skeleton className="h-8 w-64" />
           </CardHeader>
           <CardContent className="space-y-6">
-            {[1, 2, 3, 4, 5].map((i) => (
+            {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} className="space-y-2">
                 <Skeleton className="h-6 w-48" />
                 <Skeleton className="h-4 w-full" />
@@ -127,6 +128,33 @@ const ConfiguracionPage: React.FC = () => {
                     value={numerosTotales}
                     onChange={(e) =>
                       handleInputChange("numerosTotales", e.target.value)
+                    }
+                    min="1"
+                    required
+                    disabled={!isEditing && configExist}
+                  />
+                </div>
+              </div>
+            </section>
+
+            {/* Sección de Números Mínimos para Alerta */}
+            <section>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="minimumNumbersToAlert" className="text-lg">
+                    Números Mínimos para Alerta de Cierre de Sala
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Define cuántos números deben estar disponibles como mínimo para 
+                    enviar alertas a los usuarios para cuando la sala este a punto de cerrar.
+                  </p>
+                  <Input
+                    id="minimumNumbersToAlert"
+                    type="number"
+                    className="sm:text-lg p-2"
+                    value={minimumNumbersToAlert}
+                    onChange={(e) =>
+                      handleInputChange("minimumNumbersToAlert", e.target.value)
                     }
                     min="1"
                     required
