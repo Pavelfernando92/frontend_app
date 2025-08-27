@@ -279,6 +279,117 @@ const RootPage = () => {
           </div>
         </motion.div>
 
+        {/* Banner de Telegram - Únete al Grupo */}
+        <motion.div
+          className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0088CC] via-[#00A8FF] to-[#0088CC] border-2 border-[#FFD602] shadow-2xl mb-16"
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.1, duration: 0.8 }}
+        >
+          {/* Animated background particles */}
+          <div className="absolute inset-0 overflow-hidden">
+            {[...Array(15)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute rounded-full bg-white/20"
+                style={{
+                  width: Math.random() * 8 + 4,
+                  height: Math.random() * 8 + 4,
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                }}
+                animate={{
+                  y: [0, -15, 0],
+                  opacity: [0.2, 0.6, 0.2],
+                  scale: [1, 1.3, 1],
+                }}
+                transition={{
+                  duration: Math.random() * 3 + 2,
+                  repeat: Number.POSITIVE_INFINITY,
+                  delay: Math.random() * 2,
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="relative z-10 p-8 lg:p-12 text-center">
+            <motion.div
+              className="flex justify-center mb-6"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 1.3, type: "spring", stiffness: 300 }}
+            >
+              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl">
+                <svg 
+                  className="w-12 h-12 text-[#0088CC]" 
+                  fill="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                </svg>
+              </div>
+            </motion.div>
+
+            <motion.h2
+              className="text-3xl lg:text-4xl font-bold text-white mb-4"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 1.4, duration: 0.8 }}
+            >
+              ¡Únete a Nuestro Grupo de Telegram!
+            </motion.h2>
+
+            <motion.p
+              className="text-lg lg:text-xl text-white/90 mb-8 max-w-3xl mx-auto"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 1.5, duration: 0.8 }}
+            >
+              Recibe <span className="text-[#FFD602] font-bold">alertas en tiempo real</span> de nuevas salas, 
+              promociones exclusivas y notificaciones de premios. ¡No te pierdas ninguna oportunidad de ganar!
+            </motion.p>
+
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 1.6, duration: 0.8 }}
+            >
+              <a
+                href="https://t.me/+wPPMW9tx0R1mZDI5"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 bg-white text-[#0088CC] hover:bg-[#FFD602] hover:text-[#800020] px-8 py-4 rounded-full font-bold text-lg shadow-2xl border-2 border-white/20 transition-all duration-300 transform hover:scale-105"
+              >
+                <svg 
+                  className="w-6 h-6" 
+                  fill="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                </svg>
+                UNIRSE AL GRUPO
+                <motion.div
+                  animate={{ x: [0, 5, 0] }}
+                  transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
+                >
+                  →
+                </motion.div>
+              </a>
+            </motion.div>
+
+            <motion.div
+              className="mt-6 text-white/70 text-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.8, duration: 0.8 }}
+            >
+              <p>✨ Recibe notificaciones instantáneas</p>
+              <p>🎯 Acceso a promociones exclusivas</p>
+              <p>🏆 Información de salas en tiempo real</p>
+            </motion.div>
+          </div>
+        </motion.div>
+
         {/* Últimos Ganadores */}
         <LastWinners winners={winners} isLoading={cargandoWinners} />
 
