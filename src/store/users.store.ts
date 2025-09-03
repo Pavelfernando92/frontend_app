@@ -8,6 +8,8 @@ interface UsersState {
   error: boolean;
   getUsers: (token: string) => void;
   setUser: (id: number, token: string) => void;
+  setUserData: (user: User) => void;
+  updateUserCredits: (amount: number) => void;
 }
 
 const useUsersStore = create<UsersState>((set) => ({
@@ -39,6 +41,14 @@ const useUsersStore = create<UsersState>((set) => ({
         }
       }
     }
+  },
+  setUserData: (user: User) => {
+    set({ user: user });
+  },
+  updateUserCredits: (amount: number) => {
+    set((state) => ({
+      user: state.user ? { ...state.user, creditos: state.user.creditos - amount } : null
+    }));
   },
 }));
 

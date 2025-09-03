@@ -14,6 +14,7 @@ import MaintenanceModal from "./_components/MaintenanceModal";
 import { useGameLogic } from "./hooks/useGameLogic";
 import { PrizeDisplay } from "./_components/PrizeDisplay";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import CreditDisplay from "./_components/CreditDisplay";
 
 export default function GamePage() {
   const {
@@ -36,6 +37,7 @@ export default function GamePage() {
   } = useGameLogic();
 
   const gridRef = useRef<HTMLDivElement | null>(null); // Ref to the number grid
+  const [isGridVisible, setIsGridVisible] = useState(false);
 
   useEffect(() => {
     if (!session?.user) {
@@ -44,10 +46,40 @@ export default function GamePage() {
   }, [session]);
 
   useEffect(() => {
-    if (user && config && user.creditos < (config?.minimumCredits || 100) && !isMaintenance) {      
+    if (user && config && user.creditos < (config?.minimumCredits || 100) && !isMaintenance) {
       setShowCreditModal(true);
     }
   }, [user, config, setShowCreditModal, isMaintenance]);
+
+  // Detectar cuando la grid de números es visible
+  useEffect(() => {
+    // Esperar a que el room esté disponible y el DOM se haya renderizado
+    if (!room) return;
+
+    // Pequeño delay para asegurar que el DOM esté completamente renderizado
+    const timer = setTimeout(() => {
+      const gridElement = gridRef.current;
+      if (!gridElement) return;
+
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          setIsGridVisible(entry.isIntersecting);
+        },
+        {
+          threshold: 0.1, // Se considera visible cuando al menos 10% está en el viewport
+          rootMargin: '0px 0px -100px 0px' // Margen inferior para considerar "visible"
+        }
+      );
+
+      observer.observe(gridElement);
+
+      return () => {
+        observer.disconnect();
+      };
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [room]);
 
   const handleParticipateClick = () => {
     gridRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -66,6 +98,14 @@ export default function GamePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#800020] to-[#FF0000] text-white">
       <div className="container mx-auto px-4 py-8">
+        {/* Indicador de créditos del usuario - solo visible cuando la grid está visible */}
+        {user && config && isGridVisible && (
+          <CreditDisplay
+            user={user}
+            minimumCredits={config.minimumCredits || 100}
+          />
+        )}
+
         {/* Indicador de carga cuando se actualiza el usuario */}
         {isUpdatingUser && (
           <div className="fixed top-4 right-4 z-50 bg-black/80 rounded-lg p-3 flex items-center gap-2">
@@ -112,14 +152,14 @@ export default function GamePage() {
 
         {/* Number Grid */}
         <div ref={gridRef} className="relative">
-          <NumberGrid 
-            room={room} 
-            user={user!} 
-            assignNumber={assignNumber} 
-            minimumCredits={config?.minimumCredits || 100} 
+          <NumberGrid
+            room={room}
+            user={user!}
+            assignNumber={assignNumber}
+            minimumCredits={config?.minimumCredits || 100}
             isUpdatingUser={isUpdatingUser}
           />
-          
+
           {/* Overlay para deshabilitar interacción durante actualización */}
           {isUpdatingUser && (
             <div className="absolute inset-0 bg-black/20 backdrop-blur-sm rounded-lg flex items-center justify-center z-10">

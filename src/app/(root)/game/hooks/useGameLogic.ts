@@ -15,7 +15,7 @@ let hasInitialized = false;
 
 export const useGameLogic = () => {
   const { data: session, status } = useSession();
-  const { user, setUser } = useUsersStore();
+  const { user, setUser, updateUserCredits } = useUsersStore();
   const [room, setRoom] = useState<RoomsInterface | null>(null);
   const [isMaintenance, setIsMaintenance] = useState(false);
   const [showCreditModal, setShowCreditModal] = useState(false);
@@ -201,17 +201,10 @@ export const useGameLogic = () => {
             };
           });
           
-          // Actualizar usuario después de asignar un número para reflejar créditos gastados
-          // Esto asegura que los créditos se actualicen inmediatamente después de jugar
-          if (user) {
-            // Pequeño delay para asegurar que el servidor haya procesado la transacción
-            setTimeout(() => {
-              updateUser();
-            }, 500);
-            
-            if (user.creditos < (config?.minimumCredits || 100)) {
-              setShowCreditModal(true);
-            }
+          // Verificar si el usuario tiene créditos suficientes después de la asignación
+          // No necesitamos actualizar el usuario aquí ya que los créditos se actualizaron optimistamente
+          if (user && user.creditos < (config?.minimumCredits || 100)) {
+            setShowCreditModal(true);
           }
         });
 
@@ -303,12 +296,19 @@ export const useGameLogic = () => {
       return;
     }
 
+    // Actualizar optimistamente los créditos del usuario antes de enviar la petición
+    // Buscar el número seleccionado para obtener su valor
+    const selectedNumber = room?.numbers.find(n => n.id === numberId);
+    if (selectedNumber) {
+      updateUserCredits(selectedNumber.valor);
+    }
+
     globalSocket.emit("assignNumber", {
       idNumber: numberId,
       idUser: user.id,
       idRoom: roomId,
     });
-  }, [session, user, config?.minimumCredits, isSocketConnected, isUpdatingUser]);
+  }, [session, user, config?.minimumCredits, isSocketConnected, isUpdatingUser, updateUserCredits, room]);
 
   return {
     session,
